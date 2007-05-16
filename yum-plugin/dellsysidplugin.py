@@ -10,10 +10,24 @@ from biosHdr import getSystemId
 
 from yum.plugins import TYPE_CORE
 
-version="1.2.12.2_BETA"
+version="1.2.13"
 
 requires_api_version = '2.1'
 plugin_type = TYPE_CORE
+runInitHook = 1
+
+def postconfig_hook(conduit):
+    conf = conduit.getConf()
+    conf.yumvar["dellsysidpluginver"] = version
+    try:
+        conf.yumvar["sys_dev_id"] = "0x%04x" % getSystemId()
+        conf.yumvar["sys_ven_id"] = "0x1028"  # hex
+    except:
+        pass
+
+    global runInitHook
+    runInitHook = 0
+   
 
 def init_hook(conduit):
     """ 
@@ -22,6 +36,10 @@ def init_hook(conduit):
     Note: this should be compatible with any other vendor plugin that sets
     these variables because we only ever set them on Dell systems.
     """
+
+    global runInitHook
+    if not runInitHook:
+        return
 
     conf = conduit.getConf()
 

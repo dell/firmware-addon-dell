@@ -21,8 +21,8 @@ import os
 # START = Do not edit manually
 RELEASE_MAJOR="1"
 RELEASE_MINOR="2"
-RELEASE_SUBLEVEL="12"
-RELEASE_EXTRALEVEL=".2_BETA"
+RELEASE_SUBLEVEL="13"
+RELEASE_EXTRALEVEL=""
 #
 # END = Do not edit manually
 #
