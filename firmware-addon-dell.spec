@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 10
+%define sub 11
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -79,10 +79,19 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT %{suse_prefix}
 
-# if not RHEL3 or RHEL4, remove extra files so we dont get spurious errors from RPM
-%if %(test "%{dist}" == ".el3" -o "%{dist}" == ".el4" && echo 0 || echo 1)
-rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
-rm -f $RPM_BUILD_ROOT/%{_bindir}/up2date_repo_autoconf
+
+%if %(test "%{dist}" == ".el3" && echo 1 || echo 0)
+    chmod u+w $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
+    echo 'osname=el3.$basearch' >> $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
+%else 
+    %if %(test "%{dist}" == ".el4" && echo 1 || echo 0)
+        chmod u+w $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
+        echo 'osname=el4.$basearch' >> $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
+    %else
+        # if not RHEL3 or RHEL4, remove extra files so we dont get RPM unpackaged file errors
+        rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
+        rm -f $RPM_BUILD_ROOT/%{_bindir}/up2date_repo_autoconf
+    %endif
 %endif
 
  
@@ -107,6 +116,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Apr 7 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.11-1
+- enhance up2date_repo_autoconf by populating default configuration file
+
 * Fri Apr 6 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.10-1
 - Couple of changes so that the dell sysid plugin work on yum 2.4.3
   prior versions didnt crash, but didnt properly substitute mirrolist 

@@ -37,7 +37,7 @@ import os
 import shutil
 import sys
 
-version="1.2.10"
+version="1.2.11"
 
 repoNameFirstPart = "dell-hardware-"
 repoNameTemplate = "dell-hardware-ven_0x%04x_dev_0x%04x"

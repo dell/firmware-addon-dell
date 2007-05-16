@@ -10,7 +10,7 @@ from biosHdr import getSystemId
 
 from yum.plugins import TYPE_CORE
 
-version="1.2.10"
+version="1.2.11"
 
 requires_api_version = '2.1'
 plugin_type = TYPE_CORE
