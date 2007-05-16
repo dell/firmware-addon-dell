@@ -10,6 +10,8 @@ from biosHdr import getSystemId
 
 from yum.plugins import TYPE_CORE
 
+version="1.2.10"
+
 requires_api_version = '2.1'
 plugin_type = TYPE_CORE
 
@@ -29,21 +31,32 @@ def init_hook(conduit):
     except:
         pass
 
+    conf.yumvar["dellsysidpluginver"] = version
+
     if sysid:
         conf.yumvar["sys_ven_id"] = "0x1028"  # hex
         conf.yumvar["sys_dev_id"] = "0x%04x" % sysid
 
-        repos = conduit.getRepos()
-        for repo in repos.findRepos('*'):
-            repo.yumvar.update(conf.yumvar)
+    repos = conduit.getRepos()
+    for repo in repos.findRepos('*'):
+        repo.yumvar.update(conf.yumvar)
 
-        # re-process mirrorlist (it isnt varReplaced like baseUrl is)
-        for repo in repos.findRepos('*'):
-            try:
-                if repo.mirrorlist:
-                    repo.mirrorlist = repo.mirrorlist.replace("$sys_ven_id", conf.yumvar["sys_ven_id"])
-                    repo.mirrorlist = repo.mirrorlist.replace("$sys_dev_id", conf.yumvar["sys_dev_id"])
-            except AttributeError:
-                pass
+    # re-process mirrorlist (it isnt varReplaced like baseUrl is)
+    for repo in repos.findRepos('*'):
+        try:
+            # yum 3.0+
+            if repo.mirrorlist:
+                for (key, value) in conf.yumvar.items():
+                    repo.mirrorlist = repo.mirrorlist.replace("$%s" % key, value)
+        except AttributeError:
+            pass
+    
+        try:
+            # yum 2.4.3
+            if repo.mirrorlistfn:
+                for (key, value) in conf.yumvar.items():
+                    repo.mirrorlistfn = repo.mirrorlistfn.replace("$%s" % key, value)
+        except AttributeError:
+            pass
 
 

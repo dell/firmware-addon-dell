@@ -21,7 +21,7 @@ import os
 # START = Do not edit manually
 RELEASE_MAJOR="1"
 RELEASE_MINOR="2"
-RELEASE_SUBLEVEL="9"
+RELEASE_SUBLEVEL="10"
 RELEASE_EXTRALEVEL=""
 #
 # END = Do not edit manually
@@ -47,6 +47,7 @@ for i in gen_scripts:
 for i in doc_files:
     MANIFEST.write("include " + i + "\n" )
 
+MANIFEST.write("include doc/dell-hardware.conf\n" )
 MANIFEST.write("include doc/firmware-addon-dell.conf\n" )
 MANIFEST.write("include yum-plugin/dellsysidplugin.conf\n" )
 MANIFEST.write("include yum-plugin/dellsysidplugin.py\n" )
@@ -58,6 +59,7 @@ MANIFEST.close()
 dataFileList = []
 dataFileList.extend((  
     ("/usr/bin/", gen_scripts ),
+    ("/etc/sysconfig/rhn/", ["doc/dell-hardware.conf",] ),
     ("/usr/lib/yum-plugins/", ["yum-plugin/dellsysidplugin.py",] ),
     ("/etc/yum/pluginconf.d/", ["yum-plugin/dellsysidplugin.conf",] ),
     ("/etc/firmware/firmware.d/", ["doc/firmware-addon-dell.conf",] ),

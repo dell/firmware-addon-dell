@@ -7,36 +7,48 @@
   # Dual Licenced under GNU GPL and OSL
   #
   #############################################################################
-"""up2date_repo_autoconf
+"""up2date_repo_autoconf  {-a|-r} [-b] [--url=<URL>] [--config=<FILE>]
 
 usage:
     -h | --help         print this message
-    -b | --backup       create backup files before modifying
-    -s | --sysid=       override sysid
-    -c | --config=      use alternative config file
-                        default: /etc/sysconfig/rhn/dell-hardware.conf
-         --rhn_sources= use alternative rhn sources file
-    -r | --revert       remove all dell-hardware config lines
+    -a | --add_config   add dell-hardware config lines
+    -r | --remove_config remove all dell-hardware config lines
+    -b | --backup       create backup files before modifying (default)
+    -n | --no_backup    dont create backup files (not recommended)
+
+The following args override settings in /etc/sysconfig/dell-hardware.conf:
+    -o | --osname       set osname to use in url line
+    -s | --sysid=       override sysid (for testing purposed, mostly)
     -u | --url=         set alternate url to use 
                         (mirror.pl and args automatically appended)
+
+The following opts have reasonable defaults and are mainly used for testing:
+         --config=      use alternative config file
+                        default: /etc/sysconfig/rhn/dell-hardware.conf
+         --rhn_sources= use alternative rhn sources file
+                        default: /etc/sysconfig/rhn/sources
 """
 
 from __future__ import generators
 
+import ConfigParser
 import getopt
 import os
 import shutil
 import sys
 
+version="1.2.10"
+
 repoNameFirstPart = "dell-hardware-"
 repoNameTemplate = "dell-hardware-ven_0x%04x_dev_0x%04x"
-mirrorCgiTemplate= "mirrors.pl?sys_ven_id=0x%04x&sys_dev_id=0x%04x&osname=%s"
+mirrorCgiTemplate="mirrors.pl?sys_ven_id=0x%04x&sys_dev_id=0x%04x&osname=%s&up2date_repo_autoconf=" + version
+baseurlTemplate = "system.ven_0x%04x.dev_0x%04x/%s"
 
 def checkLine(yum, repo, uri, venid, sysid, osname, url):
     needUpdate=0
 
     if yum == "yum":
-        if uri != "null":
+        if uri != url + baseurlTemplate % (venid,sysid,osname):
             needUpdate=1
 
     if yum == "yum-mirror":
@@ -67,12 +79,12 @@ def cleanConfig(fileName):
         fd.write(line)
     fd.close()
 
-# add lines for the hardware repo to the end of the file
-def addConfig(fileName, url, venid, sysid, osname):
+# append lines for the hardware repo to the end of the file
+def doAddConfig(fileName, url, venid, sysid, osname):
     fd=open(fileName, "a")
     repoName = repoNameTemplate % (venid, sysid)
     fullurl= url + mirrorCgiTemplate % (venid,sysid,osname)
-    fd.write( "yum %s null\n" % repoName )
+    fd.write( "yum %s %s\n" % (repoName, url + baseurlTemplate % (venid,sysid,osname)) )
     fd.write( "yum-mirror %s %s\n" % (repoName, fullurl) )
     fd.close()
 
@@ -81,40 +93,61 @@ def main():
     venid = 0x1028
     up2dateSources="/etc/sysconfig/rhn/sources"
     url=""
-    revert=0
-    backup=0
+    addConfig=-1
+    backup=1
     config="/etc/sysconfig/rhn/dell-hardware.conf"
     osname=""
+    ini = ConfigParser.ConfigParser()
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hbs:c:ru:o:", ["help", "backup", "sysid=", "config=", "revert", "url=", "rhn_sources=", "osname="])
+        opts, args = getopt.getopt(sys.argv[1:], "hbs:nru:o:a", ["help", "add_config", "backup", "sysid=", "config=", "remove_config", "url=", "rhn_sources=", "osname=", "no_backup"])
         for option, argument in opts:
             if option in ("-h", "--help"):
                 print __doc__
                 sys.exit(0)
+            if option in ("-a", "--add_config"):
+                addConfig=1
             if option in ("-s", "--sysid"):
                 sysid=int(argument, 0)
             if option in ("-b", "--backup"):
                 backup=1
+            if option in ("-n", "--no_backup"):
+                backup=0
             if option in ("-c", "--config"):
-                config=argument
+                config = None
+                ini.read(argument)
             if option in ("--rhn_sources",):
                 up2dateSources=argument
-            if option in ("-r", "--revert"):
-                revert=1
+            if option in ("-r", "--remove_config"):
+                addConfig=0
             if option in ("-o", "--osname"):
                 osname=argument
             if option in ("-u", "--url"):
                 url=argument
 
-        if revert==0 and not sysid:
+        if addConfig < 0:
+            raise getopt.GetoptError("Must specify add_config or remove_config", "")
+
+        if config is not None:
+            ini.read(config)
+
+        if not sysid and ini.has_option("main", "sysid"):
+            sysid=ini.get("main","sysid")
+
+        if not url and ini.has_option("main", "url"):
+            url = ini.get("main", "url")  
+
+        if not osname and ini.has_option("main", "osname"):
+            osname = ini.get("main", "osname")  
+
+        if addConfig==1 and not sysid:
             from biosHdr import getSystemId
             sysid = getSystemId()
 
-        if revert==0 and not osname:
+        if addConfig==1 and not osname:
             raise getopt.GetoptError("must set OS name", "")
 
-        if revert==0 and not url:
+        if addConfig==1 and not url:
             raise getopt.GetoptError("must set url", "")
 
         # Read through the file to see what the current status is
@@ -134,6 +167,7 @@ def main():
 
                 needUpdate = checkLine(yum, repo, uri, venid, sysid, osname, url)
                 foundYum=foundYum+1
+
             if line.startswith("yum-mirror %s" % repoNameFirstPart):
                 try:
                     (yum, repo, uri) = line.split(None, 2)
@@ -147,11 +181,11 @@ def main():
 
         doClean=0
         doAdd=0
-        if revert==0 and (needUpdate or foundYum!=1 or foundYumMirror!=1):
+        if addConfig==1 and (needUpdate or foundYum!=1 or foundYumMirror!=1):
             doClean=1
             doAdd=1
 
-        elif revert==1 and (foundYum or foundYumMirror):
+        elif addConfig==0 and (foundYum or foundYumMirror):
             doClean=1
 
         if backup and (doClean or doAdd):
@@ -161,12 +195,14 @@ def main():
             cleanConfig(up2dateSources)
 
         if doAdd:
-            addConfig(up2dateSources, url, venid, sysid, osname)
+            doAddConfig(up2dateSources, url, venid, sysid, osname)
 
 
-    except (getopt.GetoptError):
+    except (getopt.GetoptError,), e:
         # print help information and exit:
         print __doc__
+        print
+        print e
         sys.exit(2)
 
     sys.exit(0)

@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 9
+%define sub 10
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -44,16 +44,9 @@ URL:            http://linux.dell.com/libsmbios/download/
 Source0:        http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-# This package is noarch for everything except RHEL3. Have to build arch
-# specific pkgs for RHEL3
-%if %(test "%{dist}" != ".el3" && echo 1 || echo 0)
-BuildArch:      noarch
-%endif
-
 # Dell only sells Intel-compat systems, so this package doesnt make much sense
 # on, eg. PPC.  Also, we rely on libsmbios, which is only avail on Intel-compat
-ExcludeArch: ppc ppc64 s390
-
+ExclusiveArch: x86_64 ia64 %{ix86}
 
 BuildRequires:  python-devel
 
@@ -62,7 +55,6 @@ BuildRequires:  python-devel
 # binaries, not linking agains libs, as indicated by the fact that I require 
 # the -bin package
 Requires: libsmbios-bin 
-
 Requires: firmware-tools > 0:1.1
 
 Provides: firmware_inventory(system_bios)  = 0:%{version}
@@ -87,6 +79,12 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT %{suse_prefix}
 
+# if not RHEL3 or RHEL4, remove extra files so we dont get spurious errors from RPM
+%if %(test "%{dist}" == ".el3" -o "%{dist}" == ".el4" && echo 0 || echo 1)
+rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
+rm -f $RPM_BUILD_ROOT/%{_bindir}/up2date_repo_autoconf
+%endif
+
  
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -100,10 +98,27 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin.conf
 %{_datadir}/firmware/dell
 %{_exec_prefix}/lib/yum-plugins/dellsysidplugin.*
+
+# drop when we drop EL4 support
+%if %(test "%{dist}" == ".el3" -o "%{dist}" == ".el4" && echo 1 || echo 0)
+%config(noreplace) %{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
 %attr(0755,root,root) %{_bindir}/*
+%endif
 
 
 %changelog
+* Fri Apr 6 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.10-1
+- Couple of changes so that the dell sysid plugin work on yum 2.4.3
+  prior versions didnt crash, but didnt properly substitute mirrolist 
+  because the name of mirrolist var is different in 2.4.3.
+- Per discussion on mailing list, convert to arch-specific pkg
+- package bin/up2date_repo_autoconf only for RHEL{3,4} releases
+
+* Fri Apr 6 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.9-1
+- downgrade api needed to 2.1
+- Added up2date_repo_autoconf binary
+- fix changes from 1.2.7 that were accidentally reverted in 1.2.8. :(
+
 * Fri Apr 6 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.8-1
 - sysid plugin: Zero pad value for sysid up to 4 chars
 - sysid plugin: Add 0x to signify that it is a hex value
