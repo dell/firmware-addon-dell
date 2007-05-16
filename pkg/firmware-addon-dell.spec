@@ -8,6 +8,7 @@
 %define minor 2
 %define sub 13
 %define extralevel %{nil}
+%define rpm_release 1
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
 #
@@ -34,7 +35,7 @@ BuildRequires:  python
 
 Name:           %{release_name}
 Version:        %{release_version} 
-Release:        1%{?dist}
+Release:        %{rpm_release}%{?dist}
 Summary:        A firmware-tools plugin to handle BIOS/Firmware for Dell systems
 
 Group:          Applications/System
