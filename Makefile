@@ -24,7 +24,6 @@
   include version.mk
   RELEASE_VERSION := $(RELEASE_MAJOR).$(RELEASE_MINOR).$(RELEASE_SUBLEVEL)$(RELEASE_EXTRALEVEL)
   RELEASE_STRING := $(RELEASE_NAME)-$(RELEASE_VERSION)
-  RPM_RELEASE := 0
 
   BUILD_DATE := $(shell date "+%Y-%m-%d %H:%M:%S")
 
@@ -101,10 +100,11 @@ endif
 
 $(SPEC): version.mk
 	@echo Updating $@
-	@cp $@ $@.new
+	@cp -f $@ $@.new
 	@perl -p -i -e 's/^%define major .*/%define major $(RELEASE_MAJOR)/' $@.new
 	@perl -p -i -e 's/^%define minor .*/%define minor $(RELEASE_MINOR)/' $@.new
 	@perl -p -i -e 's/^%define sub .*/%define sub $(RELEASE_SUBLEVEL)/' $@.new
+	@perl -p -i -e 's/^%define rpm_release .*/%define sub $(RPM_RELEASE)/' $@.new
 	@: # extralevel can be empty, so make rpm happy with conditional substitution
 	@[ -z "$(RELEASE_EXTRALEVEL)" ] || perl -p -i -e 's/^%define extralevel .*/%define extralevel $(RELEASE_EXTRALEVEL)/' $@.new
 	@[ -n "$(RELEASE_EXTRALEVEL)" ] || perl -p -i -e 's/^%define extralevel .*/%define extralevel %{nil}/' $@.new
@@ -138,8 +138,8 @@ debsign=-uc -us
 endif
 
 DEBFILES= \
-  build/$(RELEASE_NAME)_$(RELEASE_VERSION)-1_i386.deb      \
-  build/$(RELEASE_NAME)_$(RELEASE_VERSION)-1.i386.changes      \
+  build/$(RELEASE_NAME)_$(RELEASE_VERSION)-$(DEB_RELEASE)_$(DEBARCH).deb      \
+  build/$(RELEASE_NAME)_$(RELEASE_VERSION)-$(DEB_RELEASE)_i386.changes      \
   build/$(RELEASE_NAME)_$(RELEASE_VERSION).dsc
 
 # use debopts to do things like override maintainer email, etc.
@@ -153,17 +153,16 @@ $(DEBFILES): $(RELEASE_STRING).tar.gz
 	chmod +x build/$(RELEASE_STRING)/debian/rules
 	cd build/$(RELEASE_STRING)/ && debuild -rfakeroot $(debsign) $(debopts)
 
-RPM_TYPE=$(shell uname -i)
-rpm: $(RELEASE_STRING)-1.$(RPM_TYPE).rpm
-$(RELEASE_STRING)-1.$(RPM_TYPE).rpm: $(RELEASE_STRING).tar.gz
+rpm: $(RELEASE_STRING)-$(RPM_RELEASE).$(RPM_TYPE).rpm
+$(RELEASE_STRING)-$(RPM_RELEASE).$(RPM_TYPE).rpm: $(RELEASE_STRING).tar.gz
 	mkdir -p build/{RPMS,SRPMS,SPECS,SOURCES,BUILD}
 	rpmbuild --define "_topdir $(PWD)/build/" -ta $(TARBALL)
 	mv build/RPMS/*/*.rpm $(BUILDDIR)
 	mv build/SRPMS/*.rpm $(BUILDDIR)
 	-rm -rf build/ dist/ MANIFEST*
 
-srpm: $(RELEASE_STRING)-1.src.rpm
-$(RELEASE_STRING)-1.src.rpm: $(RELEASE_STRING).tar.gz
+srpm: $(RELEASE_STRING)-$(RPM_RELEASE).src.rpm
+$(RELEASE_STRING)-$(RPM_RELEASE).src.rpm: $(RELEASE_STRING).tar.gz
 	mkdir -p build/{RPMS,SRPMS,SPECS,SOURCES,BUILD}
 	rpmbuild --define "_topdir $(PWD)/build/" -ts $(TARBALL)
 	mv build/SRPMS/*.rpm $(BUILDDIR)
@@ -188,10 +187,3 @@ unit_test:
 	if [ -e ./test/test$${py_test}.py ]; then \
 		PYTHONPATH=$$PYTHONPATH:$$(pwd):$$(pwd)/pymod ./test/test$${py_test}.py		;\
 	fi
-
-# Here is a list of variables that are assumed Local to each Makefile. You can
-#   safely stomp on these values without affecting the build.
-# 	MODULES
-#	FILES
-#	TARGETS
-#	SOURCES
