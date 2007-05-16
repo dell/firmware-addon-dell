@@ -37,7 +37,7 @@ import os
 import shutil
 import sys
 
-version="1.2.11"
+version="1.2.12.2_BETA"
 
 repoNameFirstPart = "dell-hardware-"
 repoNameTemplate = "dell-hardware-ven_0x%04x_dev_0x%04x"
@@ -61,8 +61,8 @@ def checkLine(yum, repo, uri, venid, sysid, osname, url):
 
     return needUpdate
 
-def backupFiles(fileName):
-    backupName = os.path.basename(fileName) + ".backup"
+def backupFiles(fileName, backupExt):
+    backupName = os.path.basename(fileName) + backupExt
     backupDir=os.path.dirname(fileName)
     backupFullPath=os.path.join(backupDir,backupName)
     shutil.copyfile(fileName, backupFullPath)
@@ -98,9 +98,11 @@ def main():
     config="/etc/sysconfig/rhn/dell-hardware.conf"
     osname=""
     ini = ConfigParser.ConfigParser()
+    backupExt=".backup"
+    backupExtOverride=None
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hbs:nru:o:a", ["help", "add_config", "backup", "sysid=", "config=", "remove_config", "url=", "rhn_sources=", "osname=", "no_backup"])
+        opts, args = getopt.getopt(sys.argv[1:], "hbs:nru:o:a", ["help", "add_config", "backup", "sysid=", "config=", "remove_config", "url=", "rhn_sources=", "osname=", "no_backup", "backup_extension="])
         for option, argument in opts:
             if option in ("-h", "--help"):
                 print __doc__
@@ -113,6 +115,8 @@ def main():
                 backup=1
             if option in ("-n", "--no_backup"):
                 backup=0
+            if option in ("--backup_extension",):
+                backupExtOverride=argument
             if option in ("-c", "--config"):
                 config = None
                 ini.read(argument)
@@ -130,6 +134,12 @@ def main():
 
         if config is not None:
             ini.read(config)
+
+        if ini.has_option("main", "backup_extension"):
+            backupExt = ini.get("main", "backup_extension")
+
+        if backupExtOverride is not None:
+            backupExt = backupExtOverride
 
         if not sysid and ini.has_option("main", "sysid"):
             sysid=ini.get("main","sysid")
@@ -155,9 +165,7 @@ def main():
         foundYum=0
         foundYumMirror=0
         fd=open(up2dateSources,"r")
-        while 1:
-            line = fd.readline()
-            if line=="": break
+        for line in fd.readlines():
             if line.startswith("yum %s" % repoNameFirstPart):
                 try:
                     (yum, repo, uri) = line.split(None, 2)
@@ -189,7 +197,7 @@ def main():
             doClean=1
 
         if backup and (doClean or doAdd):
-            backupFiles(up2dateSources)
+            backupFiles(up2dateSources, backupExt)
 
         if doClean:
             cleanConfig(up2dateSources)
@@ -204,6 +212,11 @@ def main():
         print
         print e
         sys.exit(2)
+
+    except IOError, e:
+        print "There was an IO Error trying to modify a file."
+        print "The error was: %s" % e
+        sys.exit(3)
 
     sys.exit(0)
 

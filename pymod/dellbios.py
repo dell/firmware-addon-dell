@@ -21,23 +21,38 @@ import os
 import biosHdr
 import package
 
-class BiosPackageWrapper(object):
-    def __init__(self, package):
-        package.installFunction = self.installFunction
-        package.compareStrategy = biosHdr.compareVersions
-        package.type = self
+rbu_load_error="""Could not load Dell RBU kernel driver (dell_rbu).
+This kernel driver is included in Linux kernel 2.6.14 and later.
+For earlier releases, you can download the dell_rbu dkms module.
 
-    def installFunction(self, package):
+Cannot continue, exiting...
+"""
+
+bios_update_error="""Could not update the system BIOS.
+
+Many times, this is due to memory constraints. The BIOS update can require from
+1 to 4 megabytes of physically contiguous free RAM in order to do the update.
+Because memory can become fragmented, this is not always available. To correct
+this, try rebooting and running the update immediately after reboot.
+
+The output from the low-level bios update command was:
+
+%s
+"""
+
+class BiosPackageWrapper(object):
+    def __init__(self, pkg):
+        pkg.installFunction = self.installFunction
+        pkg.compareStrategy = biosHdr.compareVersions
+        pkg.type = self
+
+    def installFunction(self, pkg):
         ret = os.system("/sbin/modprobe dell_rbu")
         if ret:
-            out = ("Could not load Dell RBU kernel driver (dell_rbu).\n"
-                  " This kernel driver is included in Linux kernel 2.6.14 and later.\n"
-                  " For earlier releases, you can download the dell_rbu dkms module.\n\n"
-                  " Cannot continue, exiting...\n")
-            return (0, out)
-        status, output = commands.getstatusoutput("""dellBiosUpdate -u -f %s""" % os.path.join(package.path, "bios.hdr"))
+            return (0, rbu_load_error)
+        status, output = commands.getstatusoutput("""dellBiosUpdate -u -f %s""" % os.path.join(pkg.path, "bios.hdr"))
         if status:
-            raise package.InstallError(output)
+            raise package.InstallError(bios_update_error % output)
         return 1
 
 

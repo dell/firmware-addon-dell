@@ -1,0 +1,15 @@
+Source: firmware-addon-dell
+Section: admin
+Priority: extra
+Maintainer: Sadhana B <sadhana_b@dell.com>
+Build-Depends: debhelper (>= 5), python
+Standards-Version: 3.7.2
+
+Package: firmware-addon-dell
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libsmbios-bin, firmware-tools (> 0:1.1)
+Description: A firmware-tools plugin to handle BIOS/Firmware for Dell systems
+ The firmware-addon-dell package provides plugins to firmware-tools which enable
+ BIOS updates for Dell system, plus pulls in standard inventory modules
+ applicable to most Dell systems.
+
