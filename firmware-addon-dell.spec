@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 2
+%define sub 3
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -51,6 +51,12 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 %if %(test "%{dist}" != ".el3" && echo 1 || echo 0)
 BuildArch:      noarch
 %endif
+
+# Dell only sells Intel-compat systems, so this package doesnt make much sense
+# on, eg. PPC.  Also, we rely on libsmbios, which is only avail on Intel-compat
+ExclusiveArch: x86_64 ia64 %{ix86}
+ExcludeArch: ppc ppc64
+
 
 BuildRequires:  python-devel
 
