@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 6
+%define sub 7
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -103,6 +103,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Mar 30 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.7-1
+- yum plugin didnt work on FC5 due to extra, unneeded import.
+
 * Wed Mar 28 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.6-1
 - Add yum plugins for setting system ID variables. repos can use $sys_ven_id
   $sys_dev_id in their baseurl= or mirrorlist= arguments.

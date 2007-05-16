@@ -8,9 +8,8 @@ import sys
 from biosHdr import getSystemId
 
 from yum.plugins import TYPE_CORE
-from yum.yumRepo import YumRepository
 
-requires_api_version = '2.5'
+requires_api_version = '2.2'
 plugin_type = TYPE_CORE
 
 def init_hook(conduit):
