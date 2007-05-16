@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 0
+%define sub 1
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -54,7 +54,12 @@ BuildArch:      noarch
 
 BuildRequires:  python-devel
 
+# I know rpmlint complains about this (An ERROR, in fact), but it is a
+# false positive. Auto deps cannot find this one because I actually am running
+# binaries, not linking agains libs, as indicated by the fact that I require 
+# the -bin package
 Requires: libsmbios-bin 
+
 Requires: firmware-tools > 0:1.1
 
 Provides: firmware_inventory(system_bios) 
@@ -94,5 +99,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Mar 15 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.1-1
+- Trivial changes to make rpmlint happier
 * Wed Mar 14 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.0-1
 - Fedora-compliant packaging changes.

@@ -1,4 +1,3 @@
-#!/usr/bin/python2
 # VIM declarations
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
 
