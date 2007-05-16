@@ -54,11 +54,12 @@ def compareVersions(latest, toTest):
     if latest == toTest:
         return 0
 
+    #some broken bios were leaked with bad version
     # never let 'unknown' version override good version
-    if toTest == "unknown":
+    if toTest == "unknown" or toTest == "49.0.48":
         return -1
 
-    if latest == "unknown":
+    if latest == "unknown" or latest == "49.0.48":
         return 1
 
     # old style bios versioning ("Ann", eg. "A01"...)
