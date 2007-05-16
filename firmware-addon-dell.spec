@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 1
+%define sub 2
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -31,7 +31,7 @@ Requires:       python-abi = 2.2
 # needed for RHEL3 build, python-devel doesnt seem to Require: python in RHEL3
 BuildRequires:  python
 # override sitelib because this messes up on x86_64
-%define python_sitelib /usr/lib/python2.2/site-packages/
+%define python_sitelib %{_exec_prefix}/lib/python2.2/site-packages/
 %endif
 
 Name:           %{release_name}
@@ -43,7 +43,7 @@ Group:          Applications/System
 # License is actually GPL/OSL dual license (GPL Compatible), but rpmlint complains
 License:        GPL style
 URL:            http://linux.dell.com/libsmbios/download/ 
-Source0:        %{name}-%{version}.tar.gz
+Source0:        http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 # This package is noarch for everything except RHEL3. Have to build arch
@@ -62,11 +62,8 @@ Requires: libsmbios-bin
 
 Requires: firmware-tools > 0:1.1
 
-Provides: firmware_inventory(system_bios) 
-Provides: firmware_inventory(bmc)
-
-Obsoletes: fwupdate-tools
-Provides: fwupdate-tools
+Provides: firmware_inventory(system_bios)  = 0:%{version}
+Provides: firmware_inventory(bmc) = 0:%{version}
 
 %description
 The firmware-addon-dell package provides plugins to firmware-tools which enable
@@ -84,6 +81,7 @@ applicable to most Dell systems.
 
 %install
 rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT %{suse_prefix}
 
  
@@ -96,9 +94,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING-GPL COPYING-OSL readme.txt
 %{python_sitelib}/*
 %config(noreplace) %{_sysconfdir}/firmware/firmware.d/*.conf
+%{_datadir}/firmware/dell
 
 
 %changelog
+* Thu Mar 15 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.2-1
+- Trivial changes to add specific {_datadir}/firmware/dell 
 * Thu Mar 15 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.1-1
 - Trivial changes to make rpmlint happier
 * Wed Mar 14 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.0-1
