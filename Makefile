@@ -132,14 +132,26 @@ $(PY_VER_UPDATES): version.mk
 
 TARBALL=$(shell ls $(PWD)/$(RELEASE_STRING).tar.gz)
 
-deb: tarball
+# to specify key if package is to be signed: make deb debsign=-k<keyname>
+ifndef debsign
+debsign=-uc -us
+endif
+
+DEBFILES= \
+  build/$(RELEASE_NAME)_$(RELEASE_VERSION)-1_i386.deb      \
+  build/$(RELEASE_NAME)_$(RELEASE_VERSION)-1.i386.changes      \
+  build/$(RELEASE_NAME)_$(RELEASE_VERSION).dsc
+
+# use debopts to do things like override maintainer email, etc.
+deb: $(DEBFILES)
+$(DEBFILES): $(RELEASE_STRING).tar.gz
+	rm -rf build
 	mkdir -p build
 	tar zxvf $(TARBALL) -C build
-	#cd build/$(RELEASE_STRING) && dh_make -e sadhana_b@dell.com -s -f ../../$(TARBALL)
-	mkdir build/$(RELEASE_STRING)/debian
-	cp pkg/debian/*  build/$(RELEASE_STRING)/debian
-	cd build/$(RELEASE_STRING); dpkg-buildpackage
-	cp build/*.deb .
+	cp $(TARBALL) build/$(RELEASE_NAME)_$(RELEASE_VERSION).orig.tar.gz
+	cp -a pkg/debian build/$(RELEASE_STRING)/
+	chmod +x build/$(RELEASE_STRING)/debian/rules
+	cd build/$(RELEASE_STRING)/ && debuild -rfakeroot $(debsign) $(debopts)
 
 RPM_TYPE=$(shell uname -i)
 rpm: $(RELEASE_STRING)-1.$(RPM_TYPE).rpm
