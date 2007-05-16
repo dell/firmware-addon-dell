@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 8
+%define sub 9
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
