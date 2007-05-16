@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 3
+%define sub 4
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -54,7 +54,6 @@ BuildArch:      noarch
 
 # Dell only sells Intel-compat systems, so this package doesnt make much sense
 # on, eg. PPC.  Also, we rely on libsmbios, which is only avail on Intel-compat
-ExclusiveArch: x86_64 ia64 %{ix86}
 ExcludeArch: ppc ppc64
 
 
