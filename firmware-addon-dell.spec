@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 5
+%define sub 6
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -97,13 +97,20 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING-GPL COPYING-OSL readme.txt
 %{python_sitelib}/*
 %config(noreplace) %{_sysconfdir}/firmware/firmware.d/*.conf
+%config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin.conf
 %{_datadir}/firmware/dell
+%{_exec_prefix}/lib/yum-plugins/dellsysidplugin.*
 
 
 %changelog
+* Wed Mar 28 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.6-1
+- Add yum plugins for setting system ID variables. repos can use $sys_ven_id
+  $sys_dev_id in their baseurl= or mirrorlist= arguments.
+
 * Sat Mar 17 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.5-1
 - Add ExcludeArch for s390
 - Remove python-abi dep for RHEL3 (it was broken)
+- fix sitelib path missing /lib/ dir
 
 * Fri Mar 16 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.4-1
 - Add ExcludeArch to fix problem where f-a-d was being added to ppc repo

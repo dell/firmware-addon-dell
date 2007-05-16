@@ -21,7 +21,7 @@ import os
 # START = Do not edit manually
 RELEASE_MAJOR="1"
 RELEASE_MINOR="2"
-RELEASE_SUBLEVEL="5"
+RELEASE_SUBLEVEL="6"
 RELEASE_EXTRALEVEL=""
 #
 # END = Do not edit manually
@@ -42,13 +42,19 @@ for i in doc_files:
     MANIFEST.write("include " + i + "\n" )
 
 MANIFEST.write("include doc/firmware-addon-dell.conf\n" )
+MANIFEST.write("include yum-plugin/dellsysidplugin.conf\n" )
+MANIFEST.write("include yum-plugin/dellsysidplugin.py\n" )
 MANIFEST.write("include version.mk\n" )
 MANIFEST.write("include firmware-addon-dell.spec\n" )
 MANIFEST.write( "#END AUTOGEN\n" )
 MANIFEST.close()
 
 dataFileList = []
-dataFileList.append(  ("/etc/firmware/firmware.d/", ["doc/firmware-addon-dell.conf",] ) )
+dataFileList.extend((  
+    ("/usr/lib/yum-plugins/", ["yum-plugin/dellsysidplugin.py",] ),
+    ("/etc/yum/pluginconf.d/", ["yum-plugin/dellsysidplugin.conf",] ),
+    ("/etc/firmware/firmware.d/", ["doc/firmware-addon-dell.conf",] ),
+    ))
 
 distutils.core.setup (
         name = 'firmware-addon-dell',
