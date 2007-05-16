@@ -1,3 +1,4 @@
+# vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
 """
 Yum plugin to set up repo for hardware-specific repositories.
 """
@@ -8,8 +9,9 @@ import sys
 from biosHdr import getSystemId
 
 from yum.plugins import TYPE_CORE
+from yum.yumRepo import YumRepository
 
-requires_api_version = '2.2'
+requires_api_version = '2.5'
 plugin_type = TYPE_CORE
 
 def init_hook(conduit):
@@ -22,12 +24,27 @@ def init_hook(conduit):
 
     conf = conduit.getConf()
 
-    sysid = getSystemId()
+    sysid=0
+    try:
+        sysid = getSystemId()
+    except:
+        pass
 
     if sysid:
-        conf.yumvar["sys_ven_id"] = "1028"  # hex
-        conf.yumvar["sys_dev_id"] = "%x" % sysid
+        conf.yumvar["sys_ven_id"] = "0x1028"  # hex
+        conf.yumvar["sys_dev_id"] = "0x%04x" % sysid
 
         repos = conduit.getRepos()
         for repo in repos.findRepos('*'):
             repo.yumvar.update(conf.yumvar)
+
+        # re-process mirrorlist (it isnt varReplaced like baseUrl is)
+        for repo in repos.findRepos('*'):
+            try:
+                if repo.mirrorlist:
+                    repo.mirrorlist = repo.mirrorlist.replace("$sys_ven_id", conf.yumvar["sys_ven_id"])
+                    repo.mirrorlist = repo.mirrorlist.replace("$sys_dev_id", conf.yumvar["sys_dev_id"])
+            except AttributeError:
+                pass
+
+

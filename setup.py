@@ -21,7 +21,7 @@ import os
 # START = Do not edit manually
 RELEASE_MAJOR="1"
 RELEASE_MINOR="2"
-RELEASE_SUBLEVEL="7"
+RELEASE_SUBLEVEL="8"
 RELEASE_EXTRALEVEL=""
 #
 # END = Do not edit manually
@@ -33,11 +33,17 @@ for i in ("RELEASE_MAJOR", "RELEASE_MINOR", "RELEASE_SUBLEVEL", "RELEASE_EXTRALE
     if os.environ.get(i):
         globals()[i] = os.environ.get(i)
 
+gen_scripts = [
+    "bin/up2date_repo_autoconf", 
+    ]
+
 doc_files = [ "COPYING-GPL", "COPYING-OSL", "README", "readme.txt" ]
 
 MANIFEST = open( "MANIFEST.in", "w+" )
 MANIFEST.write( "#BEGIN AUTOGEN\n" )
 # include binaries
+for i in gen_scripts:
+    MANIFEST.write("include " + i + "\n" )
 for i in doc_files:
     MANIFEST.write("include " + i + "\n" )
 
@@ -51,6 +57,7 @@ MANIFEST.close()
 
 dataFileList = []
 dataFileList.extend((  
+    ("/usr/bin/", gen_scripts ),
     ("/usr/lib/yum-plugins/", ["yum-plugin/dellsysidplugin.py",] ),
     ("/etc/yum/pluginconf.d/", ["yum-plugin/dellsysidplugin.conf",] ),
     ("/etc/firmware/firmware.d/", ["doc/firmware-addon-dell.conf",] ),

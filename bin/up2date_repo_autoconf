@@ -1,0 +1,177 @@
+#!/usr/bin/python
+# vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
+
+  #############################################################################
+  #
+  # Copyright (c) 2005 Dell Computer Corporation
+  # Dual Licenced under GNU GPL and OSL
+  #
+  #############################################################################
+"""up2date_repo_autoconf
+
+usage:
+    -h | --help         print this message
+    -b | --backup       create backup files before modifying
+    -s | --sysid=       override sysid
+    -c | --config=      use alternative config file
+                        default: /etc/sysconfig/rhn/dell-hardware.conf
+         --rhn_sources= use alternative rhn sources file
+    -r | --revert       remove all dell-hardware config lines
+    -u | --url=         set alternate url to use 
+                        (mirror.pl and args automatically appended)
+"""
+
+from __future__ import generators
+
+import getopt
+import os
+import shutil
+import sys
+
+repoNameFirstPart = "dell-hardware-"
+repoNameTemplate = "dell-hardware-ven_0x%04x_dev_0x%04x"
+mirrorCgiTemplate= "mirrors.pl?sys_ven_id=0x%04x&sys_dev_id=0x%04x&osname=%s"
+
+def checkLine(yum, repo, uri, venid, sysid, osname, url):
+    needUpdate=0
+
+    if yum == "yum":
+        if uri != "null":
+            needUpdate=1
+
+    if yum == "yum-mirror":
+        if repo != repoNameTemplate % (venid, sysid):
+            needUpdate=1
+
+        fullurl= url + mirrorCgiTemplate % (venid,sysid,osname)
+        if uri != fullurl:
+            needUpdate=1
+
+    return needUpdate
+
+def backupFiles(fileName):
+    backupName = os.path.basename(fileName) + ".backup"
+    backupDir=os.path.dirname(fileName)
+    backupFullPath=os.path.join(backupDir,backupName)
+    shutil.copyfile(fileName, backupFullPath)
+
+# go through file and remove config lines for the hardware repo
+def cleanConfig(fileName):
+    fd=open(fileName,"r+")
+    rhnSources = fd.readlines()
+    fd.seek(0,0)
+    fd.truncate()
+    for line in rhnSources:
+        if line.startswith("yum %s" % repoNameFirstPart): continue
+        if line.startswith("yum-mirror %s" % repoNameFirstPart): continue
+        fd.write(line)
+    fd.close()
+
+# add lines for the hardware repo to the end of the file
+def addConfig(fileName, url, venid, sysid, osname):
+    fd=open(fileName, "a")
+    repoName = repoNameTemplate % (venid, sysid)
+    fullurl= url + mirrorCgiTemplate % (venid,sysid,osname)
+    fd.write( "yum %s null\n" % repoName )
+    fd.write( "yum-mirror %s %s\n" % (repoName, fullurl) )
+    fd.close()
+
+def main():
+    sysid = 0
+    venid = 0x1028
+    up2dateSources="/etc/sysconfig/rhn/sources"
+    url=""
+    revert=0
+    backup=0
+    config="/etc/sysconfig/rhn/dell-hardware.conf"
+    osname=""
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hbs:c:ru:o:", ["help", "backup", "sysid=", "config=", "revert", "url=", "rhn_sources=", "osname="])
+        for option, argument in opts:
+            if option in ("-h", "--help"):
+                print __doc__
+                sys.exit(0)
+            if option in ("-s", "--sysid"):
+                sysid=int(argument, 0)
+            if option in ("-b", "--backup"):
+                backup=1
+            if option in ("-c", "--config"):
+                config=argument
+            if option in ("--rhn_sources",):
+                up2dateSources=argument
+            if option in ("-r", "--revert"):
+                revert=1
+            if option in ("-o", "--osname"):
+                osname=argument
+            if option in ("-u", "--url"):
+                url=argument
+
+        if revert==0 and not sysid:
+            from biosHdr import getSystemId
+            sysid = getSystemId()
+
+        if revert==0 and not osname:
+            raise getopt.GetoptError("must set OS name", "")
+
+        if revert==0 and not url:
+            raise getopt.GetoptError("must set url", "")
+
+        # Read through the file to see what the current status is
+        needUpdate=0
+        foundYum=0
+        foundYumMirror=0
+        fd=open(up2dateSources,"r")
+        while 1:
+            line = fd.readline()
+            if line=="": break
+            if line.startswith("yum %s" % repoNameFirstPart):
+                try:
+                    (yum, repo, uri) = line.split(None, 2)
+                except ValueError:
+                    needUpdate=1
+                    continue
+
+                needUpdate = checkLine(yum, repo, uri, venid, sysid, osname, url)
+                foundYum=foundYum+1
+            if line.startswith("yum-mirror %s" % repoNameFirstPart):
+                try:
+                    (yum, repo, uri) = line.split(None, 2)
+                except ValueError:
+                    needUpdate=1
+                    continue
+
+                needUpdate = checkLine(yum, repo, uri, venid, sysid, osname, url)
+                foundYumMirror=foundYumMirror+1
+        fd.close()
+
+        doClean=0
+        doAdd=0
+        if revert==0 and (needUpdate or foundYum!=1 or foundYumMirror!=1):
+            doClean=1
+            doAdd=1
+
+        elif revert==1 and (foundYum or foundYumMirror):
+            doClean=1
+
+        if backup and (doClean or doAdd):
+            backupFiles(up2dateSources)
+
+        if doClean:
+            cleanConfig(up2dateSources)
+
+        if doAdd:
+            addConfig(up2dateSources, url, venid, sysid, osname)
+
+
+    except (getopt.GetoptError):
+        # print help information and exit:
+        print __doc__
+        sys.exit(2)
+
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
+

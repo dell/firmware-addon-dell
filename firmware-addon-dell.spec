@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 7
+%define sub 8
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -100,11 +100,17 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin.conf
 %{_datadir}/firmware/dell
 %{_exec_prefix}/lib/yum-plugins/dellsysidplugin.*
+%attr(0755,root,root) %{_bindir}/*
 
 
 %changelog
+* Fri Apr 6 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.8-1
+- sysid plugin: Zero pad value for sysid up to 4 chars
+- sysid plugin: Add 0x to signify that it is a hex value
+
 * Fri Mar 30 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.7-1
 - yum plugin didnt work on FC5 due to extra, unneeded import.
+- dont need plugin api 2.5, 2.2 will do
 
 * Wed Mar 28 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.6-1
 - Add yum plugins for setting system ID variables. repos can use $sys_ven_id
