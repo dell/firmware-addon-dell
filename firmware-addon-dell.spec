@@ -6,7 +6,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 2
-%define sub 4
+%define sub 5
 %define extralevel %{nil}
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
@@ -26,8 +26,6 @@
 
 # Compat for RHEL3 build
 %if %(test "%{dist}" == ".el3" && echo 1 || echo 0)
-# add in required ABI (hardcode because /usr/bin/python not available at this point)
-Requires:       python-abi = 2.2
 # needed for RHEL3 build, python-devel doesnt seem to Require: python in RHEL3
 BuildRequires:  python
 # override sitelib because this messes up on x86_64
@@ -54,7 +52,7 @@ BuildArch:      noarch
 
 # Dell only sells Intel-compat systems, so this package doesnt make much sense
 # on, eg. PPC.  Also, we rely on libsmbios, which is only avail on Intel-compat
-ExcludeArch: ppc ppc64
+ExcludeArch: ppc ppc64 s390
 
 
 BuildRequires:  python-devel
@@ -103,9 +101,18 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Mar 17 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.5-1
+- Add ExcludeArch for s390
+- Remove python-abi dep for RHEL3 (it was broken)
+
+* Fri Mar 16 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.4-1
+- Add ExcludeArch to fix problem where f-a-d was being added to ppc repo
+
 * Thu Mar 15 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.2-1
 - Trivial changes to add specific {_datadir}/firmware/dell 
+
 * Thu Mar 15 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.1-1
 - Trivial changes to make rpmlint happier
+
 * Wed Mar 14 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.0-1
 - Fedora-compliant packaging changes.
