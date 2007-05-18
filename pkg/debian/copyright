@@ -1,22 +1,34 @@
 This package was debianized by Sadhana B <sadhana_b@dell.com> on
 Mon,  9 Apr 2007 19:15:12 +0530.
 
-It was downloaded from: http://linux.dell.com/libsmbios/download/firmware-tools/
+It was downloaded from: http://linux.dell.com/libsmbios/download/firmware-addon-dell/
 
 Upstream Author: Michael_E_Brown <michael_e_brown@dell.com>
 
 The Debian packaging is Copyright 2007 Sadhana B <sadhana_b@dell.com> and
 is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
 
-Upstream source is dual licensed GPL/OSL.
+The upstream sources are licensed thusly:
 
-This program is licensed under the OSL v2.0. Alternatively, you may also license under GPL, below.
+ * Copyright (C) 2005 Dell Inc.
+ *  by Michael Brown <Michael_E_Brown@dell.com>
+ * Licensed under the Open Software License version 3.0 or later.
+ *
+ * Alternatively, you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 2 of the License,
+ * or (at your option) any later version.
 
-This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+St, Fifth Floor, Boston, MA  02110-1301 USA
 
-On Debian systems, the complete text of the GNU General Public License can be found in `/usr/share/common-licenses/GPL'.
+On Debian systems, the complete text of the GNU General Public License can be
+found in `/usr/share/common-licenses/GPL'.
 
