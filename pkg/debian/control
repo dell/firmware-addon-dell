@@ -7,7 +7,7 @@ XS-Python-Version: current
 Standards-Version: 3.7.2
 
 Package: firmware-addon-dell
-Architecture: any
+Architecture: all
 Depends: ${python:Depends}, libsmbios-bin, firmware-tools (> 1.1)
 Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
