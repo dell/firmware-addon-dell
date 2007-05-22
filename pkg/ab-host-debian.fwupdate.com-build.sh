@@ -10,7 +10,10 @@ cd $cur_dir/../
 [ -n "$APT_REPO" ] || 
     APT_REPO=/var/ftp/pub/yum/dell-repo/testing/debian/
 
+set +e
 . version.mk
+set -e
+
 RELEASE_VERSION=${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${RELEASE_EXTRALEVEL}
 RELEASE_STRING=${RELEASE_NAME}-${RELEASE_VERSION}
 
