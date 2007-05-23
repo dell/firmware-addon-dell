@@ -103,7 +103,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL readme.txt
-%{python_sitelib}/*
+%{python_sitelib}/firmwaretools/*
 %config(noreplace) %{_sysconfdir}/firmware/firmware.d/*.conf
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin.conf
 %{_datadir}/firmware/dell
