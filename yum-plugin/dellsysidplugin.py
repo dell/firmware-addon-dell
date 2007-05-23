@@ -6,11 +6,11 @@ Yum plugin to set up repo for hardware-specific repositories.
 import os
 import sys
 
-from biosHdr import getSystemId
+from firmwaretools.biosHdr import getSystemId
 
 from yum.plugins import TYPE_CORE
 
-version="1.2.13"
+version="1.3.0"
 
 requires_api_version = '2.1'
 plugin_type = TYPE_CORE
