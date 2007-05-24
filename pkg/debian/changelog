@@ -1,3 +1,11 @@
+firmware-addon-dell (1.3.0-1) gutsy; urgency=low
+
+  * new upstream version
+  * packaging changes as suggested by 
+    Martin Pitt <martin.pitt@ubuntu.com>
+
+ -- Sadhana B <sadhana_b@dell.com>  Thu, 24 May 2007 16:59:49 -0500
+
 firmware-addon-dell (1.2.13-1) gutsy; urgency=low
 
   * Initial release 
