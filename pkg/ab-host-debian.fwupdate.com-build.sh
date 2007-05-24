@@ -1,7 +1,6 @@
 #!/bin/sh
 # vim:et:ai:ts=4:sw=4:filetype=sh:
 
-set -e
 set -x
 
 cur_dir=$(cd $(dirname $0); pwd)
@@ -12,12 +11,11 @@ umask 002
 [ -n "$APT_REPO" ] || 
     APT_REPO=/var/ftp/pub/yum/dell-repo/testing/debian/
 
-set +e
 . version.mk
-set -e
-
 RELEASE_VERSION=${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${RELEASE_EXTRALEVEL}
 RELEASE_STRING=${RELEASE_NAME}-${RELEASE_VERSION}
+
+set -e
 
 make distclean
 make deb
