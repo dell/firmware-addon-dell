@@ -10,5 +10,3 @@ DEB_RELEASE=1
 DEBARCH=i386
 RPM_TYPE=$(shell uname -i)
 PY_VER_UPDATES=bin/up2date_repo_autoconf yum-plugin/dellsysidplugin.py
-
-
