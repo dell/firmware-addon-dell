@@ -1,4 +1,4 @@
-# vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
+# vim:tw=0:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
 
   #############################################################################
   #
@@ -56,32 +56,32 @@ def compareVersions(latest, toTest):
     #some broken bios were leaked with bad version
     # never let 'unknown' version override good version
     if toTest == "unknown" or toTest == "49.0.48":
-        return -1
+        return 1
 
     if latest == "unknown" or latest == "49.0.48":
-        return 1
+        return -1
 
     # old style bios versioning ("Ann", eg. "A01"...)
     if "." not in latest and "." not in toTest:
         # anything non "Ann" version is "special" and should never win a
         # ver comparison unless 'latest' is also "special" 
         if not toTest.lower().startswith("a") and latest.lower().startswith("a"):
-            return -1
-        elif toTest.lower().startswith("a") and not latest.lower().startswith("a"):
             return 1
+        elif toTest.lower().startswith("a") and not latest.lower().startswith("a"):
+            return -1
 
         if toTest > latest:
-            return 1
-        else:
             return -1
+        else:
+            return 1
 
     # only get here if one or other has new-style bios versioning
 
     # new style bios overrides old style...
     if "." not in latest:
-        return 1
-    if "." not in toTest:
         return -1
+    if "." not in toTest:
+        return 1
 
     # both new style, compare major/minor/build individually
     latestArr = latest.split(".")
@@ -90,28 +90,30 @@ def compareVersions(latest, toTest):
     # versions 90-99 are "special" and should never win a ver comparison
     # unless 'latest' is also "special"
     try:
-        if int(toTest[0]) >= firstSpecialVer and int(latest[0]) < firstSpecialVer:
+        if int(toTestArr[0]) >= firstSpecialVer and int(latestArr[0]) < firstSpecialVer:
+            return 1
+        if int(latestArr[0]) >= firstSpecialVer and int(toTestArr[0]) < firstSpecialVer:
             return -1
     except ValueError: # non-numeric version ?
         pass
 
     for i in xrange(0, len(latestArr)):
         # test array shorter than latest, 
-        if i > len(toTestArr):
-            return -1
+        if i >= len(toTestArr):
+            return 1
         try:
             if int(toTestArr[i]) > int(latestArr[i]):
-                return 1
-            if int(toTestArr[i]) < int(latestArr[i]):
                 return -1
+            if int(toTestArr[i]) < int(latestArr[i]):
+                return 1
         except ValueError:  # non-numeric version?
             pass #punt...
 
     # if we get here, everything is equal (so far)
     if len(toTestArr) > len(latestArr):
-        return 1
+        return -1
 
-    return -1
+    return 1
             
         
 def cmdFactory_dellBiosUpdate(filename):
