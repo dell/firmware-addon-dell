@@ -1,6 +1,6 @@
 #! /usr/bin/env python2
 # VIM declarations
-# vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
+# vim:tw=0:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
 
 #alphabetical order
 import os
