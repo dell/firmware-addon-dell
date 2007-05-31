@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-# vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
+# vim:tw=0:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:
 """
 """
 
@@ -13,8 +13,12 @@ import HelperXml
 testXml = """<?xml version="1.0" ?>
 <root>
     <node attr="1"/>
-    <node attr="2"/>
-    <node attr="3"/>
+    <node attr="2">
+        <subnode>this is the text we want</subnode>
+    </node>
+    <node attr="3">
+        <subnode>other text we may want</subnode>
+    </node>
     <blap>
         <subnode>
             <name>FOO</name>
@@ -43,6 +47,15 @@ class TestCase(unittest.TestCase):
                 result.append(HelperXml.getNodeAttribute( rootChild, "attr" ))
 
         self.assertEqual( result, expected )
+
+    def testFindSpecific(self):
+        self.assertEqual( "this is the text we want",
+                HelperXml.getNodeText(self.dom, "root", 
+                ("node", {"attr": "2"}), "subnode"))
+
+        self.assertEqual( "other text we may want",
+                HelperXml.getNodeText(self.dom, "root", 
+                ("node", {"attr": "3"}), "subnode"))
 
     def testIterNodeAttrManual(self):
         result = []
