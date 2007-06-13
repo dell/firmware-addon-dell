@@ -6,11 +6,11 @@ Yum plugin to set up repo for hardware-specific repositories.
 import os
 import sys
 
-from firmwaretools.biosHdr import getSystemId
+from firmwaretools.biosHdr import getSystemId, getServiceTag
 
 from yum.plugins import TYPE_CORE
 
-version="1.3.0"
+version="1.4.0"
 
 requires_api_version = '2.1'
 plugin_type = TYPE_CORE
@@ -18,10 +18,12 @@ runInitHook = 1
 
 def postconfig_hook(conduit):
     conf = conduit.getConf()
-    conf.yumvar["dellsysidpluginver"] = version
     try:
+        conf.yumvar["dellsysidpluginver"] = version
         conf.yumvar["sys_dev_id"] = "0x%04x" % getSystemId()
         conf.yumvar["sys_ven_id"] = "0x1028"  # hex
+        conf.yumvar["service_tag"] = getServiceTag()
+        conf.yumvar["repo_config"] = conduit.confString("main", "repo_config", default="latest")
     except:
         pass
 
@@ -54,6 +56,8 @@ def init_hook(conduit):
     if sysid:
         conf.yumvar["sys_ven_id"] = "0x1028"  # hex
         conf.yumvar["sys_dev_id"] = "0x%04x" % sysid
+        conf.yumvar["service_tag"] = getServiceTag()
+        conf.yumvar["repo_config"] = conduit.confString("main", "repo_config", default="latest")
 
     repos = conduit.getRepos()
     for repo in repos.findRepos('*'):
