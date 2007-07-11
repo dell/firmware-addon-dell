@@ -21,7 +21,7 @@ import os
 # START = Do not edit manually
 RELEASE_MAJOR="1"
 RELEASE_MINOR="3"
-RELEASE_SUBLEVEL="0"
+RELEASE_SUBLEVEL="1"
 RELEASE_EXTRALEVEL=""
 #
 # END = Do not edit manually
@@ -34,7 +34,6 @@ for i in ("RELEASE_MAJOR", "RELEASE_MINOR", "RELEASE_SUBLEVEL", "RELEASE_EXTRALE
         globals()[i] = os.environ.get(i)
 
 gen_scripts = [
-    "bin/up2date_repo_autoconf", 
     ]
 
 doc_files = [ "COPYING-GPL", "COPYING-OSL", "README", "readme.txt" ]

@@ -1,3 +1,5 @@
+# vim:tw=0:ts=4:sw=4:et
+
 ###################################################################
 #
 # WARNING
@@ -6,7 +8,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 3
-%define sub 0
+%define sub 1
 %define extralevel %{nil}
 %define rpm_release 1
 %define release_name firmware-addon-dell
@@ -79,22 +81,6 @@ applicable to most Dell systems.
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT %{suse_prefix}
-
-
-%if %(test "%{dist}" == ".el3" && echo 1 || echo 0)
-    chmod u+w $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
-    echo 'osname=el3.$basearch' >> $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
-%else 
-    %if %(test "%{dist}" == ".el4" && echo 1 || echo 0)
-        chmod u+w $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
-        echo 'osname=el4.$basearch' >> $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
-    %else
-        # if not RHEL3 or RHEL4, remove extra files so we dont get RPM unpackaged file errors
-        rm -f $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
-        rm -f $RPM_BUILD_ROOT/%{_bindir}/up2date_repo_autoconf
-    %endif
-%endif
-
  
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -117,6 +103,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jul 11 2007 Michael E Brown <michael_e_brown at dell.com> - 1.3.1-1
+- up2date_repo_autoconf is now obsolete. dell-*-repository files no longer
+  use it.
+
 * Sat Apr 7 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.11-1
 - enhance up2date_repo_autoconf by populating default configuration file
 
