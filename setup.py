@@ -49,7 +49,6 @@ for i in doc_files:
 MANIFEST.write("include pkg/debian/control\n" )
 MANIFEST.write("include pkg/debian/copyright\n" )
 MANIFEST.write("include pkg/debian/rules\n" )
-MANIFEST.write("include doc/dell-hardware.conf\n" )
 MANIFEST.write("include doc/firmware-addon-dell.conf\n" )
 MANIFEST.write("include yum-plugin/dellsysidplugin.conf\n" )
 MANIFEST.write("include yum-plugin/dellsysidplugin.py\n" )
@@ -62,7 +61,6 @@ MANIFEST.close()
 dataFileList = []
 dataFileList.extend((  
     ("/usr/bin/", gen_scripts ),
-    ("/etc/sysconfig/rhn/", ["doc/dell-hardware.conf",] ),
     ("/usr/lib/yum-plugins/", ["yum-plugin/dellsysidplugin.py",] ),
     ("/etc/yum/pluginconf.d/", ["yum-plugin/dellsysidplugin.conf",] ),
     ("/etc/firmware/firmware.d/", ["doc/firmware-addon-dell.conf",] ),

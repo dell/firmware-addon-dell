@@ -10,7 +10,7 @@ from firmwaretools.biosHdr import getSystemId, getServiceTag
 
 from yum.plugins import TYPE_CORE
 
-version="1.4.0"
+version="1.3.1"
 
 requires_api_version = '2.1'
 plugin_type = TYPE_CORE

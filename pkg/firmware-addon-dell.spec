@@ -95,12 +95,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/firmware/dell
 %{_exec_prefix}/lib/yum-plugins/dellsysidplugin.*
 
-# drop when we drop EL4 support
-%if %(test "%{dist}" == ".el3" -o "%{dist}" == ".el4" && echo 1 || echo 0)
-%config(noreplace) %{_sysconfdir}/sysconfig/rhn/dell-hardware.conf
-%attr(0755,root,root) %{_bindir}/*
-%endif
-
 
 %changelog
 * Wed Jul 11 2007 Michael E Brown <michael_e_brown at dell.com> - 1.3.1-1
