@@ -1,5 +1,5 @@
 #!/bin/sh
-# vim:et:ai:ts=4:sw=4:filetype=sh:
+# vim:et:ai:ts=4:sw=4:filetype=sh:tw=0
 
 set -x
 
@@ -18,6 +18,8 @@ DEST=$LIBSMBIOS_TOPDIR/download/${RELEASE_NAME}/$RELEASE_STRING/
 
 set -e
 
+git tag -u libsmbios -m "tag for official release: $RELEASE_STRING" v${RELEASE_VERSION}
+
 make tarball srpm
 
 mkdir -p $DEST
@@ -27,4 +29,4 @@ for i in *.tar.{gz,bz2} *.zip *.src.rpm; do
     cp $i $DEST
 done
 
-/var/ftp/pub/yum/dell-repo/software/_tools/upload_rpm.sh ./${RELEASE_STRING}-${RPM_RELEASE}.src.rpm
+/var/ftp/pub/yum/dell-repo/software/_tools/upload_rpm.sh ./${RELEASE_STRING}-${RPM_RELEASE}*.src.rpm
