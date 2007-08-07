@@ -41,7 +41,7 @@ The output from the low-level bios update command was:
 """
 
 class BiosPackage(package.RepositoryPackage):
-    def __init__(self, pkg):
+    def __init__(self, *args, **kargs):
         super(BiosPackage, self).__init__(*args, **kargs)
         pkg.compareStrategy = biosHdr.compareVersions
 
