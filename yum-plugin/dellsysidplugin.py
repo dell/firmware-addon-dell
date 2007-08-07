@@ -6,7 +6,7 @@ Yum plugin to set up repo for hardware-specific repositories.
 import os
 import sys
 
-from firmwaretools.biosHdr import getSystemId, getServiceTag
+from firmware_addon_dell.biosHdr import getSystemId, getServiceTag
 
 from yum.plugins import TYPE_CORE
 
