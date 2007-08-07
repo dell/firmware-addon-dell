@@ -40,13 +40,12 @@ The output from the low-level bios update command was:
 %s
 """
 
-class BiosPackageWrapper(object):
+class BiosPackage(package.RepositoryPackage):
     def __init__(self, pkg):
-        pkg.installFunction = self.installFunction
+        super(BiosPackage, self).__init__(*args, **kargs)
         pkg.compareStrategy = biosHdr.compareVersions
-        pkg.type = self
 
-    def installFunction(self, pkg):
+    def install(self):
         ret = os.system("/sbin/modprobe dell_rbu")
         if ret:
             return (0, rbu_load_error)
