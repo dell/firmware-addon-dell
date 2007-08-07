@@ -20,6 +20,9 @@
 
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
+# no debuginfo package, as there are no compiled binaries.
+%define debug_package %{nil}
+
 # SUSE 10 has a crazy distutils.cfg that specifies prefix=/usr/local
 # have to override that.
 %define suse_prefix %{nil}
