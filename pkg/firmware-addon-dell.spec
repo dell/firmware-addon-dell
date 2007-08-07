@@ -7,8 +7,8 @@
 # These are all automatically replaced by the release script.
 # START = Do not edit manually
 %define major 1
-%define minor 3
-%define sub 1
+%define minor 4
+%define sub 0
 %define extralevel %{nil}
 %define rpm_release 1
 %define release_name firmware-addon-dell
@@ -58,7 +58,7 @@ BuildRequires:  python-devel
 # binaries, not linking agains libs, as indicated by the fact that I require 
 # the -bin package
 Requires: libsmbios-bin 
-Requires: firmware-tools > 0:1.1
+Requires: firmware-tools >= 0:1.4
 
 Provides: firmware_inventory(system_bios)  = 0:%{version}
 Provides: firmware_inventory(bmc) = 0:%{version}
@@ -89,7 +89,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc COPYING-GPL COPYING-OSL readme.txt
-%{python_sitelib}/firmwaretools/*
+%{python_sitelib}/*
 %config(noreplace) %{_sysconfdir}/firmware/firmware.d/*.conf
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin.conf
 %{_datadir}/firmware/dell
