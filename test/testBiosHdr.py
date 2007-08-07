@@ -10,35 +10,35 @@ import unittest
 
 class TestCase(unittest.TestCase):
     def setUp(self):
-        import biosHdr
+        import firmware_addon_dell.biosHdr as biosHdr
         biosHdr.unit_test_mode = 1
     
     def tearDown(self):
-        import biosHdr
+        import firmware_addon_dell.biosHdr as biosHdr
         biosHdr.unit_test_mode = 0
         
     def testGetSystemID(self):
-        import biosHdr
+        import firmware_addon_dell.biosHdr as biosHdr
         id = biosHdr.getSystemId()
         self.assertEqual( id, biosHdr.mockResult_getSystemId )
  
     def testGetSystemBiosVer(self):
-        import biosHdr
+        import firmware_addon_dell.biosHdr as biosHdr
         biosVer = biosHdr.getSystemBiosVer()
         self.assertEqual( biosVer, biosHdr.mockResult_getSystemBiosVer )
  
     def testGetBiosHdrVersion(self):
-        import biosHdr
+        import firmware_addon_dell.biosHdr as biosHdr
         biosVer = biosHdr.getBiosHdrVersion("")
         self.assertEqual( biosVer, biosHdr.mockResult_getBiosHdrVersion )
  
     def testGetHdrSystemIds(self):
-        import biosHdr
+        import firmware_addon_dell.biosHdr as biosHdr
         biosVer = biosHdr.getHdrSystemIds("")
         self.assertEqual( biosVer, biosHdr.mockResult_getHdrSystemIds )
 
     def testVerCmp_old(self):
-        from biosHdr import compareVersions
+        from firmware_addon_dell.biosHdr import compareVersions
         self.assertEqual( -1, compareVersions("A00", "A01"))
         self.assertEqual( -1, compareVersions("A90", "A91"))
         self.assertEqual( -1, compareVersions("X02", "A01"))
@@ -55,7 +55,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(  1, compareVersions("C01", "B01"))
 
     def testVerCmp_new(self):
-        from biosHdr import compareVersions
+        from firmware_addon_dell.biosHdr import compareVersions
         # "special" versions
         self.assertEqual( -1, compareVersions("49.0.48", "1.0.0"))
         # test range
@@ -70,7 +70,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual( -1, compareVersions("2.0.0", "3.0.0"))
  
     def testVerCmp_new_rev(self):
-        from biosHdr import compareVersions
+        from firmware_addon_dell.biosHdr import compareVersions
         # "special" versions
         self.assertEqual(  1, compareVersions("1.0.0", "49.0.48"))
         # test range

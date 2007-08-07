@@ -12,7 +12,9 @@ some docs here eventually.
 """
 
 # import arranged alphabetically
-import package
+import firmwaretools.package as package
+import xml.dom.minidom
+import HelperXml as xmlHelp
 
 # sample XML:
 # <?xml version="1.0" encoding="UTF-8"?>
@@ -25,8 +27,6 @@ import package
 # loathe SVM team. What kind of idiots specify hex values in a dtd without leading 0x? Are bus/device/function also hex? Who knows?
 
 def genPackagesFromSvmXml(xmlstr):
-    import xml.dom.minidom
-    import HelperXml as xmlHelp
     otherAttrs={}
     dom = xml.dom.minidom.parseString(xmlstr)
     for nodeElem in xmlHelp.iterNodeElement( dom, "SVMInventory", "Device" ):

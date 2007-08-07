@@ -19,7 +19,7 @@ import os
 
 # local modules
 import biosHdr
-import package
+import firmwaretools.package as package
 
 rbu_load_error="""Could not load Dell RBU kernel driver (dell_rbu).
 This kernel driver is included in Linux kernel 2.6.14 and later.

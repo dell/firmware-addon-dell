@@ -75,8 +75,7 @@ distutils.core.setup (
         author_email="libsmbios-devel@lists.us.dell.com",
         url="http://linux.dell.com/libsmbios/main/",
 
-        package_dir={'firmwaretools': 'pymod'},
-        py_modules=['firmwaretools.dellbios', 'firmwaretools.biosHdr', 'firmwaretools.HelperXml', "firmwaretools.svm"],
+        packages=['firmware_addon_dell',],
 
         ext_modules = [ ],
         data_files=dataFileList,

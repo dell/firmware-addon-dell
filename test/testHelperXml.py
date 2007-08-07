@@ -8,7 +8,7 @@ import sys
 import xml.dom.minidom
 import unittest
 
-import HelperXml
+import firmware_addon_dell.HelperXml as HelperXml
 
 testXml = """<?xml version="1.0" ?>
 <root>
