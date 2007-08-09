@@ -126,7 +126,7 @@ def extractHdrFromLinuxDup(ini, originalSource, sourceFile, outputDir, stdout, s
 
     pycompat.executeCommand("""LANG=C perl -p -i -e 's/.*\$_ROOT_UID.*/true ||/; s/grep -an/grep -m1 -an/; s/tail \+/tail -n \+/' %s""" % sourceFile)
     # unset TERM or DUPS do idiotic things like respawn in an xterm. blech.
-    pycompat.executeCommand("""TERM= sh %s --extract ./ > /dev/null 2>&1""" % (sourceFile))
+    pycompat.executeCommand("""DISPLAY= TERM= sh %s --extract ./ > /dev/null 2>&1""" % (sourceFile))
     hdrFileList = glob.glob( "*.[hH][dD][rR]")
     for i in hdrFileList:
         ret = copyHdr(ini, originalSource, i, outputDir)
