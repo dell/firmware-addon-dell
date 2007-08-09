@@ -49,7 +49,7 @@ class BiosPackage(package.RepositoryPackage):
         ret = os.system("/sbin/modprobe dell_rbu")
         if ret:
             return (0, rbu_load_error)
-        status, output = commands.getstatusoutput("""dellBiosUpdate -u -f %s""" % os.path.join(pkg.path, "bios.hdr"))
+        status, output = commands.getstatusoutput("""dellBiosUpdate -u -f %s""" % os.path.join(self.path, "bios.hdr"))
         if status:
             raise package.InstallError(bios_update_error % output)
         return 1
