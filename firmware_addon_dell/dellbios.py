@@ -62,7 +62,7 @@ def BootstrapGenerator():
     sysId = biosHdr.getSystemId()
 
     for i in [ "system_bios(ven_0x1028_dev_0x%04x)", "bmc_firmware(ven_0x1028_dev_0x%04x)" ]:
-        p = package.InstalledPackage(
+        p = package.Device(
             name = (i % sysId).lower()
             )
         yield p
@@ -80,7 +80,7 @@ def BootstrapGenerator():
 def InventoryGenerator(): 
     sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
-    p = package.InstalledPackage(
+    p = package.Device(
         name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
         displayname = "System BIOS for %s" % biosHdr.getProductName(),
         version = biosVer,
