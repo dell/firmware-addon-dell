@@ -54,7 +54,7 @@ def genPackagesFromSvmXml(xmlstr):
             friendlyName =  xmlHelp.getNodeAttribute(nodeElem, "display", ("Application", {"componentType":"FRMW"}))
             ver = xmlHelp.getNodeAttribute(nodeElem, "version", ("Application", {"componentType":"FRMW"}))
     
-            p = package.InstalledPackage(
+            p = package.Device(
                 name=name,
                 version = ver.lower(),
                 friendlyName=friendlyName,
