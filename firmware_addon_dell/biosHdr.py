@@ -38,13 +38,21 @@ def getSystemId():
             return int(id.strip().lower(), 16)
     raise InternalError("Could not find System ID in getSystemId output.")
 
+def getProductName():
+    output = cmdFactory_getSystemId()
+    for line in output.split("\n"):
+        if line.startswith("Product Name:"):
+            first, id = line.split(":", 1)
+            return id.strip()
+    raise InternalError("Could not find Product Name in getSystemId output.")
+
 def getServiceTag():
     output = cmdFactory_getSystemId()
     for line in output.split("\n"):
         if line.startswith("Service Tag:"):
             first, id = line.split(":", 1)
             return id.strip()
-    raise InternalError("Could not find System ID in getSystemId output.")
+    raise InternalError("Could not find Service Tag in getSystemId output.")
             
 def getSystemBiosVer():
     output = cmdFactory_getSystemId()
