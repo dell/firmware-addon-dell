@@ -45,7 +45,7 @@ Summary:        A firmware-tools plugin to handle BIOS/Firmware for Dell systems
 
 Group:          Applications/System
 # License is actually GPL/OSL dual license (GPL Compatible), but rpmlint complains
-License:        GPL style
+License:        GPLv2+ or OSL
 URL:            http://linux.dell.com/libsmbios/download/ 
 Source0:        http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -100,6 +100,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Aug 17 2007 Michael E Brown <michael_e_brown at dell.com> - 1.4.4-1
+- rebase to latest upstream
+
 * Wed Jul 11 2007 Michael E Brown <michael_e_brown at dell.com> - 1.3.1-1
 - up2date_repo_autoconf is now obsolete. dell-*-repository files no longer
   use it.
