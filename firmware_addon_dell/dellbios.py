@@ -82,6 +82,7 @@ def InventoryGenerator():
     biosVer = biosHdr.getSystemBiosVer()
     p = package.InstalledPackage(
         name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
+        displayname = "System BIOS for %s" % biosHdr.getProductName(),
         version = biosVer,
         compareStrategy = biosHdr.compareVersions,
         )
