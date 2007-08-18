@@ -68,7 +68,10 @@ def BootstrapGenerator():
         yield p
 
     # output all normal PCI bootstrap packages with system-specific name
-    module = __import__("bootstrap_pci", globals(),  locals(), [])
+    pymod = "firmwaretools.bootstrap_pci"
+    module = __import__(pymod, globals(),  locals(), [])
+    for i in pymod.split(".")[1:]:
+        module = getattr(module, i)
     for pkg in module.BootstrapGenerator():
         pkg.name = "%s/%s" % (pkg.name, "system(ven_0x1028_dev_0x%04x)" % sysId)
         yield pkg
