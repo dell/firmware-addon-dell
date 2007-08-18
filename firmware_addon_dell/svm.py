@@ -51,13 +51,13 @@ def genPackagesFromSvmXml(xmlstr):
             except TypeError:
                 pass
 
-            friendlyName =  xmlHelp.getNodeAttribute(nodeElem, "display", ("Application", {"componentType":"FRMW"}))
+            displayname =  xmlHelp.getNodeAttribute(nodeElem, "display", ("Application", {"componentType":"FRMW"}))
             ver = xmlHelp.getNodeAttribute(nodeElem, "version", ("Application", {"componentType":"FRMW"}))
     
             p = package.Device(
                 name=name,
                 version = ver.lower(),
-                friendlyName=friendlyName,
+                displayname=displayname,
                 **otherAttrs
                 )
 
