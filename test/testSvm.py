@@ -18,7 +18,7 @@ class TestCase(unittest.TestCase):
     def testSvm_onePkg(self):
         import firmware_addon_dell.svm as svm
         expectedResult = [{"name": "pci_firmware(ven_0x1028_dev_0x0015_subven_0x1028_subdev_0x1f03)", 
-                "friendlyName": "Dell PERC 5/i Integrated Controller 1 Firmware",
+                "displayname": "Dell PERC 5/i Integrated Controller 1 Firmware",
                 "pciDbdf": (0, 2, 0x14, 0)
             },]
         actualResult = []
@@ -43,7 +43,7 @@ class TestCase(unittest.TestCase):
     def testSvm_pcivendev_only(self):
         import firmware_addon_dell.svm as svm
         expectedResult = [{"name": "pci_firmware(ven_0x1028_dev_0x0015)", 
-                "friendlyName": "Dell PERC 5/i Integrated Controller 1 Firmware",
+                "displayname": "Dell PERC 5/i Integrated Controller 1 Firmware",
                 "pciDbdf": (0, 2, 0x14, 0)
             },]
         actualResult = []
@@ -69,7 +69,7 @@ class TestCase(unittest.TestCase):
     def testSvm_no_bdf(self):
         import firmware_addon_dell.svm as svm
         expectedResult = [{"name": "pci_firmware(ven_0x1028_dev_0x0015)", 
-                "friendlyName": "Dell PERC 5/i Integrated Controller 1 Firmware",
+                "displayname": "Dell PERC 5/i Integrated Controller 1 Firmware",
             },]
         actualResult = []
 
@@ -94,13 +94,13 @@ class TestCase(unittest.TestCase):
         import firmware_addon_dell.svm as svm
         expectedResult = [
                 {"name": "pci_firmware(ven_0x1028_dev_0x0015_subven_0x1028_subdev_0x1f03)", 
-                "friendlyName": "Dell PERC 5/i Integrated Controller 1 Firmware",
+                "displayname": "Dell PERC 5/i Integrated Controller 1 Firmware",
                 "pciDbdf": (0, 2, 0x14, 0)},
                 {"name": "pci_firmware(ven_0x1028_dev_0x0016)", 
-                "friendlyName": "Dell PERC 5/i Integrated Controller 2 Firmware",
+                "displayname": "Dell PERC 5/i Integrated Controller 2 Firmware",
                 "pciDbdf": (0, 2, 0x15, 0)},
                 {"name": "pci_firmware(ven_0x1028_dev_0x0017)", 
-                "friendlyName": "Dell PERC 5/i Integrated Controller 3 Firmware",
+                "displayname": "Dell PERC 5/i Integrated Controller 3 Firmware",
                 "pciDbdf": (0, 2, 0x16, 0)},
             ]
         actualResult = []
