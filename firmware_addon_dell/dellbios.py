@@ -61,13 +61,18 @@ import traceback
 def BootstrapGenerator(): 
     sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
-    for i in [ "system_bios(ven_0x1028_dev_0x%04x)", "bmc_firmware(ven_0x1028_dev_0x%04x)" ]:
-        p = package.Device(
-            name = (i % sysId).lower(),
+
+    yield package.Device(
+            name = ("bmc_firmware(ven_0x1028_dev_0x%04x)" % sysId).lower(),
             displayname = "System BIOS for %s" % biosHdr.getProductName(),
             version = biosVer,
             )
-        yield p
+
+    yield package.Device(
+            name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
+            displayname = "Baseboard Management Controller (BMC) for %s" % biosHdr.getProductName(),
+            version = biosVer,
+            )
 
     # output all normal PCI bootstrap packages with system-specific name
     pymod = "firmwaretools.bootstrap_pci"
