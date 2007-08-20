@@ -54,7 +54,11 @@ def genPackagesFromSvmXml(xmlstr):
             displayname =  xmlHelp.getNodeAttribute(nodeElem, "display", ("Application", {"componentType":"FRMW"}))
             ver = xmlHelp.getNodeAttribute(nodeElem, "version", ("Application", {"componentType":"FRMW"}))
     
-            p = package.Device(
+            type = package.Device
+            if otherAttrs.get("pciDbdf"):
+                type = package.PciDevice
+
+            p = type(
                 name=name,
                 version = ver.lower(),
                 displayname=displayname,

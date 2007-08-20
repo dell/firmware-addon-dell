@@ -60,10 +60,12 @@ import traceback
 # standard entry point -- Bootstrap
 def BootstrapGenerator(): 
     sysId = biosHdr.getSystemId()
-
+    biosVer = biosHdr.getSystemBiosVer()
     for i in [ "system_bios(ven_0x1028_dev_0x%04x)", "bmc_firmware(ven_0x1028_dev_0x%04x)" ]:
         p = package.Device(
-            name = (i % sysId).lower()
+            name = (i % sysId).lower(),
+            displayname = "System BIOS for %s" % biosHdr.getProductName(),
+            version = biosVer,
             )
         yield p
 
