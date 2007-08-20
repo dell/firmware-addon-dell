@@ -46,12 +46,16 @@ class BiosPackage(package.RepositoryPackage):
         self.compareStrategy = biosHdr.compareVersions
 
     def install(self):
+        self.status = "in_progress"
         ret = os.system("/sbin/modprobe dell_rbu")
         if ret:
             return (0, rbu_load_error)
         status, output = commands.getstatusoutput("""dellBiosUpdate -u -f %s""" % os.path.join(self.path, "bios.hdr"))
         if status:
+            self.status = "failed"
             raise package.InstallError(bios_update_error % output)
+
+        self.status = "success"
         return 1
 
 
