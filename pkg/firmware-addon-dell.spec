@@ -8,7 +8,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 4
-%define sub 7
+%define sub 8
 %define extralevel %{nil}
 %define rpm_release 1
 %define release_name firmware-addon-dell
@@ -61,7 +61,7 @@ BuildRequires:  python-devel
 # binaries, not linking agains libs, as indicated by the fact that I require 
 # the -bin package
 Requires: libsmbios-bin 
-Requires: firmware-tools >= 0:1.4
+Requires: firmware-tools >= 0:1.5
 
 Provides: firmware_inventory(system_bios)  = 0:%{version}
 Provides: firmware_inventory(bmc) = 0:%{version}
@@ -100,6 +100,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Aug 22 2007 Michael E Brown <michael_e_brown at dell.com> - 1.4.7-1
+- rebase to latest upstream
+
 * Fri Aug 17 2007 Michael E Brown <michael_e_brown at dell.com> - 1.4.4-1
 - rebase to latest upstream
 

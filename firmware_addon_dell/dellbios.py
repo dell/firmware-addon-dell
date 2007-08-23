@@ -44,13 +44,22 @@ class BiosPackage(package.RepositoryPackage):
     def __init__(self, *args, **kargs):
         super(BiosPackage, self).__init__(*args, **kargs)
         self.compareStrategy = biosHdr.compareVersions
+        self.capabilities['can_downgrade'] = True
+        self.capabilities['can_reflash'] = True
 
     def install(self):
         self.status = "in_progress"
+        override=""
+        # only activate override in cases where it is needed.
+        installDevice = self.getCurrentInstallDevice()
+        if self.compareVersion(installDevice) >= 0:   # activate for downgrade and reflash
+            override="--override_bios_version"
+        instStr = """dellBiosUpdate %s -u -f %s""" % (override, os.path.join(self.path, "bios.hdr"))
+
         ret = os.system("/sbin/modprobe dell_rbu")
         if ret:
             return (0, rbu_load_error)
-        status, output = commands.getstatusoutput("""dellBiosUpdate -u -f %s""" % os.path.join(self.path, "bios.hdr"))
+        status, output = commands.getstatusoutput(instStr)
         if status:
             self.status = "failed"
             raise package.InstallError(bios_update_error % output)
