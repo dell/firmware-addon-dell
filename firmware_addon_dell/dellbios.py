@@ -52,9 +52,11 @@ class BiosPackage(package.RepositoryPackage):
         override=""
         # only activate override in cases where it is needed.
         installDevice = self.getCurrentInstallDevice()
-        if self.compareVersion(installDevice) >= 0:   # activate for downgrade and reflash
+        #print "BiosPackage DEBUG: %s" % self.compareVersion(installDevice)
+        if self.compareVersion(installDevice) <= 0:   # activate for downgrade and reflash
             override="--override_bios_version"
         instStr = """dellBiosUpdate %s -u -f %s""" % (override, os.path.join(self.path, "bios.hdr"))
+        #print "BiosPackage: %s" % instStr
 
         ret = os.system("/sbin/modprobe dell_rbu")
         if ret:
