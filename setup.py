@@ -46,9 +46,12 @@ for i in gen_scripts:
 for i in doc_files:
     MANIFEST.write("include " + i + "\n" )
 
+MANIFEST.write("include pkg/debian/changelog\n" )
 MANIFEST.write("include pkg/debian/control\n" )
 MANIFEST.write("include pkg/debian/copyright\n" )
 MANIFEST.write("include pkg/debian/rules\n" )
+MANIFEST.write("include pkg/debian/postinst\n" )
+MANIFEST.write("include pkg/debian/prerm\n" )
 MANIFEST.write("include doc/firmware-addon-dell.conf\n" )
 MANIFEST.write("include yum-plugin/dellsysidplugin.conf\n" )
 MANIFEST.write("include yum-plugin/dellsysidplugin.py\n" )
