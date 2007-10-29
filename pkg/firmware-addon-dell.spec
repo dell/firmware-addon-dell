@@ -8,7 +8,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 4
-%define sub 8
+%define sub 9
 %define extralevel %{nil}
 %define rpm_release 1
 %define release_name firmware-addon-dell
