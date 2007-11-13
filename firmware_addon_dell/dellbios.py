@@ -66,7 +66,7 @@ class BiosPackage(package.RepositoryPackage):
             self.status = "failed"
             raise package.InstallError(bios_update_error % output)
 
-        self.status = "success"
+        self.status = "warm_reboot_needed"
         return 1
 
 

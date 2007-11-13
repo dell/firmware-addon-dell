@@ -10,7 +10,7 @@ from firmware_addon_dell.biosHdr import getSystemId, getServiceTag
 
 from yum.plugins import TYPE_CORE
 
-version="1.4.8"
+version="1.4.9"
 
 requires_api_version = '2.1'
 plugin_type = TYPE_CORE

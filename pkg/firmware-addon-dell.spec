@@ -8,7 +8,7 @@
 # START = Do not edit manually
 %define major 1
 %define minor 4
-%define sub 8
+%define sub 9
 %define extralevel %{nil}
 %define rpm_release 1
 %define release_name firmware-addon-dell
@@ -61,7 +61,7 @@ BuildRequires:  python-devel
 # binaries, not linking agains libs, as indicated by the fact that I require 
 # the -bin package
 Requires: libsmbios-bin 
-Requires: firmware-tools >= 0:1.5
+Requires: firmware-tools >= 0:1.5.8
 
 Provides: firmware_inventory(system_bios)  = 0:%{version}
 Provides: firmware_inventory(bmc) = 0:%{version}
