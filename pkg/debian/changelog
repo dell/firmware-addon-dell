@@ -1,7 +1,5 @@
-firmware-addon-dell (1.4.9-0ubuntu1) hardy; urgency=low
+firmware-addon-dell (1.4.9-0ubuntu2) hardy; urgency=low
 
   * Initial release.
-    - debian packaging changes per review from Martin Pitt <martin.pitt@ubuntu.com>
-    - use pbuilder
 
- -- Matt Domsch <Matt_Domsch@dell.com>  Thu, 15 Nov 2007 22:10:00 -0600
+ -- Matt Domsch <Matt_Domsch@dell.com>  Tue, 20 Nov 2007 13:19:00 -0600
