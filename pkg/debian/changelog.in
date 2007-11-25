@@ -1,4 +1,4 @@
-firmware-addon-dell (1.4.9-0ubuntu2) hardy; urgency=low
+firmware-addon-dell (1.4.9-0ubuntu2~#DIST#1) #DIST#; urgency=low
 
   * Initial release. (LP: #163122)
 
