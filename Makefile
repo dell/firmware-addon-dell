@@ -145,12 +145,22 @@ $(TARBALL): $(SPEC) setup.py $(PY_VER_UPDATES)
 
 deb_destdir=$(BUILDDIR)/dist
 
-dist_set:
- ifndef DIST
-   $(error "Must set DIST={gutsy,hardy,sid,...} for deb and sdeb targets")
- endif		
+# This is required to ensure DIST is set when necessary
+NEEDS_DIST = 0
+ifeq ($(MAKECMDGOALS),deb)
+  NEEDS_DIST = 1
+endif
+ifeq ($(MAKECMDGOALS),sdeb)
+  NEEDS_DIST = 1
+endif
 
-deb: $(TARBALL) dist_set
+ifeq ($(NEEDS_DIST), 1)
+  ifndef DIST
+  $(error "Must set DIST={gutsy,hardy,sid,...} for deb and sdeb targets")
+  endif
+endif
+
+deb: $(TARBALL)
 	mkdir -p $(deb_destdir) ; \
 	tmp_dir=`mktemp -d /tmp/firmware-addon-dell.XXXXXXXX` ; \
 	tar zxvf $(TARBALL) -C $${tmp_dir} ; \
