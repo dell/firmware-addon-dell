@@ -158,6 +158,10 @@ ifeq ($(NEEDS_DIST), 1)
   ifndef DIST
   $(error "Must set DIST={gutsy,hardy,sid,...} for deb and sdeb targets")
   endif
+  ifndef DISTTAG
+  $(info Remember to set DISTTAG='~gutsy1' for deb and sdeb targets for backports)
+  DISTTAG =
+  endif
 endif
 
 deb: $(TARBALL)
@@ -167,7 +171,8 @@ deb: $(TARBALL)
 	cp $(TARBALL) $${tmp_dir}/$(RELEASE_NAME)_$(RELEASE_VERSION).orig.tar.gz ; \
 	cp -a pkg/debian $${tmp_dir}/$(RELEASE_STRING)/ ; \
 	chmod +x $${tmp_dir}/$(RELEASE_STRING)/debian/rules ; \
-	sed -e "s/#DIST#/$(DIST)/g" $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in > $${tmp_dir}/$(RELEASE_STRING)/debian/changelog ; \
+	sed -e "s/#DISTTAG#/$(DISTTAG)/g" -e "s/#DIST#/$(DIST)/g" $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in > $${tmp_dir}/$(RELEASE_STRING)/debian/changelog ; \
+	rm $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in ; \
 	cd $${tmp_dir}/$(RELEASE_STRING)/ ; \
 	pdebuild --use-pdebuild-internal --auto-debsign --buildresult $(deb_destdir) ; \
 	cd - ; \
@@ -180,7 +185,8 @@ sdeb: $(TARBALL)
 	tar -C $${tmp_dir} -xzf $(TARBALL) ; \
 	mv $${tmp_dir}/$(RELEASE_STRING)/pkg/debian $${tmp_dir}/$(RELEASE_STRING)/debian ; \
 	chmod +x $${tmp_dir}/$(RELEASE_STRING)/debian/rules ; \
-	sed -e "s/#DIST#/$(DIST)/g" $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in > $${tmp_dir}/$(RELEASE_STRING)/debian/changelog ; \
+	sed -e "s/#DISTTAG#/$(DISTTAG)/g" -e "s/#DIST#/$(DIST)/g" $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in > $${tmp_dir}/$(RELEASE_STRING)/debian/changelog ; \
+	rm $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in ; \
 	cd $${tmp_dir}/$(RELEASE_STRING) ; \
 	dpkg-buildpackage -D -S -sa -rfakeroot ; \
 	mv ../$(RELEASE_NAME)_* $(deb_destdir) ; \
