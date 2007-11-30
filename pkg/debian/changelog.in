@@ -1,0 +1,5 @@
+firmware-addon-dell (1.4.9-0ubuntu2~#DIST#1) #DIST#; urgency=low
+
+  * Initial release. (LP: #163122)
+
+ -- Matt Domsch <Matt_Domsch@dell.com>  Tue, 20 Nov 2007 13:19:00 -0600

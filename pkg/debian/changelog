@@ -1,7 +1,0 @@
-firmware-addon-dell (1.4.8-0ubuntu1) gutsy; urgency=low
-
-  * Initial release.
-    - debian packaging changes per review from Martin Pitt <martin.pitt@ubuntu.com>
-    - use pbuilder
-
- -- Matt Domsch <Matt_Domsch@dell.com>  Mon, 15 Oct 2007 11:48:03 -0500

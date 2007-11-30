@@ -21,7 +21,7 @@ import os
 # START = Do not edit manually
 RELEASE_MAJOR="1"
 RELEASE_MINOR="4"
-RELEASE_SUBLEVEL="9"
+RELEASE_SUBLEVEL="10"
 RELEASE_EXTRALEVEL=""
 #
 # END = Do not edit manually
@@ -46,7 +46,7 @@ for i in gen_scripts:
 for i in doc_files:
     MANIFEST.write("include " + i + "\n" )
 
-MANIFEST.write("include pkg/debian/changelog\n" )
+MANIFEST.write("include pkg/debian/changelog.in\n" )
 MANIFEST.write("include pkg/debian/control\n" )
 MANIFEST.write("include pkg/debian/copyright\n" )
 MANIFEST.write("include pkg/debian/rules\n" )
