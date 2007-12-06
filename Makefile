@@ -169,12 +169,13 @@ deb: $(TARBALL)
 	tmp_dir=`mktemp -d /tmp/firmware-addon-dell.XXXXXXXX` ; \
 	tar zxvf $(TARBALL) -C $${tmp_dir} ; \
 	cp $(TARBALL) $${tmp_dir}/$(RELEASE_NAME)_$(RELEASE_VERSION).orig.tar.gz ; \
-	cp -a pkg/debian $${tmp_dir}/$(RELEASE_STRING)/ ; \
+	cp -ar $(BUILDDIR)/pkg/debian $${tmp_dir}/$(RELEASE_STRING)/debian ; \
 	chmod +x $${tmp_dir}/$(RELEASE_STRING)/debian/rules ; \
 	sed -e "s/#DISTTAG#/$(DISTTAG)/g" -e "s/#DIST#/$(DIST)/g" $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in > $${tmp_dir}/$(RELEASE_STRING)/debian/changelog ; \
 	rm $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in ; \
 	cd $${tmp_dir}/$(RELEASE_STRING)/ ; \
-	pdebuild --use-pdebuild-internal --auto-debsign --buildresult $(deb_destdir) ; \
+	mkdir -p $(deb_destdir)/$(DIST) ; \
+	pdebuild --use-pdebuild-internal --buildresult $(deb_destdir)/$(DIST) ; \
 	cd - ; \
 	rm -rf $${tmp_dir}
 
@@ -183,13 +184,14 @@ sdeb: $(TARBALL)
 	tmp_dir=`mktemp -d /tmp/firmware-addon-dell.XXXXXXXX` ; \
 	cp $(TARBALL) $${tmp_dir}/$(RELEASE_NAME)_$(RELEASE_VERSION).orig.tar.gz ;\
 	tar -C $${tmp_dir} -xzf $(TARBALL) ; \
-	mv $${tmp_dir}/$(RELEASE_STRING)/pkg/debian $${tmp_dir}/$(RELEASE_STRING)/debian ; \
+	cp -ar $(BUILDDIR)/pkg/debian $${tmp_dir}/$(RELEASE_STRING)/debian ; \
 	chmod +x $${tmp_dir}/$(RELEASE_STRING)/debian/rules ; \
 	sed -e "s/#DISTTAG#/$(DISTTAG)/g" -e "s/#DIST#/$(DIST)/g" $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in > $${tmp_dir}/$(RELEASE_STRING)/debian/changelog ; \
 	rm $${tmp_dir}/$(RELEASE_STRING)/debian/changelog.in ; \
 	cd $${tmp_dir}/$(RELEASE_STRING) ; \
 	dpkg-buildpackage -D -S -sa -rfakeroot ; \
-	mv ../$(RELEASE_NAME)_* $(deb_destdir) ; \
+	mkdir -p $(deb_destdir)/$(DIST) ; \
+	mv ../$(RELEASE_NAME)_* $(deb_destdir)/$(DIST) ; \
 	cd - ;\
 	rm -rf $${tmp_dir}
 
