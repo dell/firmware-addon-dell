@@ -1,15 +1,10 @@
-firmware-addon-dell (1.4.10-1ubuntu1#DISTTAG#) #DIST#; urgency=low
+firmware-addon-dell (1.4.10-0ubuntu3#DISTTAG#) #DIST#; urgency=low
 
   * Standards-Version 3.7.3
   * update 00-Makefile.patch
   * add linda.overrides for yum-plugins warning
   * add watch
   * add getSystemId path patch from upstream
-
- -- Matt Domsch <Matt_Domsch@dell.com>  Sun, 09 Dec 2007 17:45:06 -0600
-
-firmware-addon-dell (1.4.10-0ubuntu2#DISTTAG#) #DIST#; urgency=low
-
   * Initial release. (LP: #163122)
 
- -- Matt Domsch <Matt_Domsch@dell.com>  Wed, 28 Nov 2007 13:19:00 -0600
+ -- Matt Domsch <Matt_Domsch@dell.com>  Sun, 09 Dec 2007 17:45:06 -0600
