@@ -9,6 +9,11 @@ include /usr/share/cdbs/1/class/python-distutils.mk
 
 DEB_INSTALL_DOCS_ALL :=
 
+install/firmware-addon-dell::
+	install -d debian/firmware-addon-dell/usr/share/linda/overrides
+	install -m 644 debian/linda.overrides \
+		debian/firmware-addon-dell/usr/share/linda/overrides/firmware-addon-dell
+
 # default distutils clean doesnt clean up a couple of files we
 # autogenerate
 clean::
