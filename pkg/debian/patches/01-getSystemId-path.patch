@@ -1,0 +1,12 @@
+diff --git a/firmware_addon_dell/biosHdr.py b/firmware_addon_dell/biosHdr.py
+index 42cb0c0..fc332a6 100644
+--- a/firmware_addon_dell/biosHdr.py
++++ b/firmware_addon_dell/biosHdr.py
+@@ -22,6 +22,7 @@ class InvalidHdr (Exception): pass
+ unit_test_mode = 0
+ def cmdFactory_getSystemId():
+     if not unit_test_mode:
++        os.environ['PATH'] = os.path.pathsep.join([os.environ.get('PATH',''), "/usr/sbin"])
+         status, output = commands.getstatusoutput("""getSystemId""")
+         if status != 0:
+             raise PermissionDenied("Failed to get System ID: %s" % output)
