@@ -63,7 +63,6 @@ MANIFEST.close()
 
 dataFileList = []
 dataFileList.extend((  
-    ("/usr/bin/", gen_scripts ),
     ("/usr/lib/yum-plugins/", ["yum-plugin/dellsysidplugin.py",] ),
     ("/etc/yum/pluginconf.d/", ["yum-plugin/dellsysidplugin.conf",] ),
     ("/etc/firmware/firmware.d/", ["doc/firmware-addon-dell.conf",] ),
