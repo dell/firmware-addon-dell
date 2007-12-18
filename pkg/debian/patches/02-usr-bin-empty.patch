@@ -1,0 +1,10 @@
+--- firmware-addon-dell-1.4.10/setup.py.orig	2007-12-17 19:08:44.000000000 -0600
++++ firmware-addon-dell-1.4.10/setup.py	2007-12-17 19:08:50.000000000 -0600
+@@ -63,7 +63,6 @@
+ 
+ dataFileList = []
+ dataFileList.extend((  
+-    ("/usr/bin/", gen_scripts ),
+     ("/usr/lib/yum-plugins/", ["yum-plugin/dellsysidplugin.py",] ),
+     ("/etc/yum/pluginconf.d/", ["yum-plugin/dellsysidplugin.conf",] ),
+     ("/etc/firmware/firmware.d/", ["doc/firmware-addon-dell.conf",] ),
