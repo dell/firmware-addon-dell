@@ -1,10 +1,5 @@
 firmware-addon-dell (1.4.10-0ubuntu3#DISTTAG#) #DIST#; urgency=low
 
-  * Standards-Version 3.7.3
-  * update 00-Makefile.patch
-  * add linda.overrides for yum-plugins warning
-  * add watch
-  * add getSystemId path patch from upstream
   * Initial release. (LP: #163122)
 
- -- Matt Domsch <Matt_Domsch@dell.com>  Sun, 09 Dec 2007 17:45:06 -0600
+ -- Matt Domsch <Matt_Domsch@dell.com>  Mon, 17 Dec 2007 19:22:03 -0600
