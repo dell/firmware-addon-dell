@@ -20,6 +20,15 @@ import os
 # local modules
 import biosHdr
 import firmwaretools.package as package
+import firmwaretools.plugins as plugins
+
+plugin_type = (plugins.TYPE_BOOTSTRAP, plugins.TYPE_INVENTORY)
+requires_api_version = "2.0"
+
+def config_hook(conduit, *args, **kargs):
+    conduit.getBase().registerBootstrapFunction("bootstrap_dellbios", BootstrapGenerator)
+    conduit.getBase().registerInventoryFunction("inventory_dellbios", InventoryGenerator)
+
 
 rbu_load_error="""Could not load Dell RBU kernel driver (dell_rbu).
 This kernel driver is included in Linux kernel 2.6.14 and later.
