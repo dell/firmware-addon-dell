@@ -61,7 +61,7 @@ BuildRequires:  python-devel
 # binaries, not linking agains libs, as indicated by the fact that I require 
 # the -bin package
 Requires: libsmbios-bin 
-Requires: firmware-tools >= 0:1.5.8
+Requires: firmware-tools >= 0:2.0.0
 
 Provides: firmware_inventory(system_bios)  = 0:%{version}
 Provides: firmware_inventory(bmc) = 0:%{version}
