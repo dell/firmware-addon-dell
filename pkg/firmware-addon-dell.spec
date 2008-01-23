@@ -7,8 +7,8 @@
 # These are all automatically replaced by the release script.
 # START = Do not edit manually
 %define major 1
-%define minor 4
-%define sub 10
+%define minor 5
+%define sub 0
 %define extralevel %{nil}
 %define rpm_release 1
 %define release_name firmware-addon-dell
