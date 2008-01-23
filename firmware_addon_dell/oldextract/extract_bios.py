@@ -26,7 +26,9 @@ import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.biosHdr as biosHdr
 import dell_repo_tools.extract_common
 from extract_bios_blacklist import dell_system_id_blacklist
-from firmwaretools.trace_decorator import dprint, decorateAllFunctions
+from firmwaretools.trace_decorator import getLog, decorateAllFunctions
+
+moduleVerboseLog = getLog(prefix="verbose.")
 
 dosre = re.compile(r"This program cannot be run in DOS mode")
 
@@ -46,12 +48,12 @@ def copyHdr(ini, originalSource, hdrFile, outputDir):
        return ret
 
     ver = biosHdr.getBiosHdrVersion(hdrFile)
-    dprint("hdr version: %s\n" % ver)
-    dprint("hdr system ids: %s\n" % biosHdr.getHdrSystemIds(hdrFile))
+    moduleVerboseLog.info("hdr version: %s\n" % ver)
+    moduleVerboseLog.info("hdr system ids: %s\n" % biosHdr.getHdrSystemIds(hdrFile))
     # ids here are nums
     for id in biosHdr.getHdrSystemIds(hdrFile):
         if id in dell_system_id_blacklist:
-            dprint("Skipping because it is in blacklist: %s\n" % id)
+            moduleVerboseLog.info("Skipping because it is in blacklist: %s\n" % id)
             continue
         systemName = ("system_bios_ven_0x1028_dev_0x%04x" % id).lower()
         biosName = ("%s_version_%s" % (systemName, ver)).lower()
