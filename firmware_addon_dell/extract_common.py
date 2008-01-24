@@ -1,13 +1,18 @@
 
+from __future__ import generators
+
 import os
 import select
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
+import xml.dom.minidom
 
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
+import firmware_addon_dell.HelperXml as HelperXml
 
 decorate(traceLog())
 def copyToTmp(statusObj):
@@ -17,7 +22,7 @@ def copyToTmp(statusObj):
     def rmTmp(statusObj, status):
         statusObj.logger.debug("\tremoving tmpdir")
         shutil.rmtree(statusObj.tmpdir)
-    
+
     statusObj.logger.debug("\tcreating temp dir")
     statusObj.tmpdir = tempfile.mkdtemp(prefix="firmware-tools-extract-")
     statusObj.logger.debug("\t\t--> %s" % statusObj.tmpdir)
@@ -111,7 +116,17 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
 
     return output
 
+class UnsupportedFileExt(Exception): pass
 
+decorate(traceLog())
+def assertFileExt(file, *args):
+    good = 0
+    for ext in args:
+        if file.lower().endswith(ext.lower()):
+            good=1
+            break
+    if not good:
+        raise UnsupportedFileExt, "File %s does not have a supported extension: %s" % (file, repr(args))
 
 decorate(traceLog())
 def dupExtract(sourceFile, cwd, logger=None):
@@ -122,11 +137,10 @@ def dupExtract(sourceFile, cwd, logger=None):
         )
 
     loggedCmd(
-        ['sh', '-c', "%s --extract ./" % sourceFile],
+        ['sh', '-c', "%s --extract %s" % (sourceFile, cwd)],
         cwd=cwd, logger=logger,
         env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
         )
-
 
 decorate(traceLog())
 def zipExtract(sourceFile, cwd, logger=None):
@@ -141,5 +155,69 @@ def cabExtract(sourceFile, cwd, logger=None):
         ["unshield", "x", sourceFile],
         cwd=cwd, logger=logger,
         )
+
+
+
+
+
+systemConfIni=None
+decorate(traceLog())
+def getShortname(vendid, sysid):
+    if not systemConfIni:
+        raise fubar("need to configure systemConfIni before continuing... programmer error")
+        return ""
+
+    if not systemConfIni.has_section("id_to_name"):
+        return ""
+
+    if systemConfIni.has_option("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)):
+        try:
+            return eval(systemConfIni.get("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)))
+        except Exception, e:
+            print "Ignoring error in config file: %s" % e
+
+    return ""
+
+decorate(traceLog())
+def appendIniArray(ini, section, option, toAdd):
+    fn_array = []
+    if ini.has_option(section, option):
+        # 1 at end represents raw=1, dont interpolate
+        try:
+            fn_array = eval(ini.get(section, option, 1))
+        except Exception, e:
+            print "Ignoring error in config file: %s" % e
+
+    if toAdd not in fn_array:
+        fn_array.append(toAdd)
+        fn_array.sort()
+
+    ini.set(section, option, repr(fn_array))
+
+decorate(traceLog())
+def safemkdir(dest):
+    try:
+        os.makedirs( dest )
+    except OSError: #already exists
+        pass
+
+decorate(traceLog())
+def setIni(ini, section, **kargs):
+    if not ini.has_section(section):
+        ini.add_section(section)
+
+    for (key, item) in kargs.items():
+        ini.set(section, key, item)
+
+decorate(traceLog())
+def getBiosDependencies(packageXml):
+    ''' returns list of supported systems from package xml '''
+    if os.path.exists( packageXml ):
+        dom = xml.dom.minidom.parse(packageXml)
+        for modelElem in HelperXml.iterNodeElement(dom, "SoftwareComponent", "SupportedSystems", "Brand", "Model"):
+            systemId = int(HelperXml.getNodeAttribute(modelElem, "systemID"),16)
+            for dep in HelperXml.iterNodeAttribute(modelElem, "version", "Dependency"):
+                dep = dep.lower()
+                yield (systemId, dep)
 
 
