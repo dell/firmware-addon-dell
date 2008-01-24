@@ -22,8 +22,18 @@ def config_hook(conduit, *args, **kargs):
 
 decorate(traceLog())
 def testExtract(statusObj, outputTopdir, logger, *args, **kargs):
+    assertFileExt( ['.bin',] )
     common.copyToTmp(statusObj)
-    #common.dupExtract(statusObj)
-    #common.zipExtract(statusObj)
-    #common.cabExtract(statusObj)
+    try:
+        common.doOnce( statusObj, common.dupExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
+    except:
+        pass
+    try:
+        common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
+    except:
+        pass
+    try:
+        common.doOnce( statusObj, common.cabExtract, "data1.cab", statusObj.tmpdir, logger )
+    except:
+        pass
 
