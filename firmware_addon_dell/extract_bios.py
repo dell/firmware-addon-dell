@@ -1,10 +1,8 @@
 
-import os
-import shutil
-import tempfile
 
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.plugins as plugins
+import extract_common as common
 
 __VERSION__ = "1.0"
 plugin_type = (plugins.TYPE_CORE,)
@@ -23,23 +21,9 @@ def config_hook(conduit, *args, **kargs):
         moduleLog.info("failed to register extract module.")
 
 decorate(traceLog())
-def copyToTmp(statusObj):
-    if getattr(statusObj, "tmpdir", None) is not None:
-        return
-
-    def rmTmp(statusObj, status):
-        statusObj.logger.debug("\tremoving tmpdir")
-        shutil.rmtree(statusObj.tmpdir)
-    
-    statusObj.logger.debug("\tcreating temp dir")
-    statusObj.tmpdir = tempfile.mkdtemp(prefix="firmware-tools-extract-")
-    statusObj.logger.debug("\t\t--> %s" % statusObj.tmpdir)
-    statusObj.logger.debug("\tcopying to tempdir")
-    shutil.copy(statusObj.file, statusObj.tmpdir)
-    statusObj.tmpfile = os.path.join(statusObj.tmpdir, os.path.basename(statusObj.file))
-    statusObj.finalFuncs.append(rmTmp)
-
-decorate(traceLog())
 def testExtract(statusObj, outputTopdir, logger, *args, **kargs):
-    copyToTmp(statusObj)
+    common.copyToTmp(statusObj)
+    #common.dupExtract(statusObj)
+    #common.zipExtract(statusObj)
+    #common.cabExtract(statusObj)
 
