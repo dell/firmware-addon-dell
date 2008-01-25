@@ -19,15 +19,19 @@ requires_api_version = "2.0"
 moduleLog = getLog()
 conf = None
 
+class noHdrs(fte.DebugExc): pass
+class skip(fte.DebugExc): pass
+
 decorate(traceLog())
 def extract_doCheck_hook(conduit, *args, **kargs):
     # try/except in case extract plugin not installed
     try:
         import extract_cmd
-        extract_cmd.registerPlugin(extractBiosFromLinuxDup, __VERSION__)
         extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
-        extract_cmd.registerPlugin(extractHdrFromWindowsDupOrInstallShield, __VERSION__)
-        extract_cmd.registerPlugin(extractHdrFromPrecisionWindowsExe, __VERSION__)
+        extract_cmd.registerPlugin(extractBiosFromLinuxDup, __VERSION__)
+        extract_cmd.registerPlugin(extractBiosFromWindowsDupOrInstallShield, __VERSION__)
+        extract_cmd.registerPlugin(extractBiosFromPrecisionWindowsExe, __VERSION__)
+        extract_cmd.registerPlugin(extractBiosFromDcopyExe, __VERSION__)
     except ImportError, e:
         moduleLog.info("failed to register extract module.")
         return
@@ -91,7 +95,7 @@ def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
     return True
 
 decorate(traceLog())
-def extractHdrFromWindowsDupOrInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
+def extractBiosFromWindowsDupOrInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
     common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
@@ -102,7 +106,7 @@ def extractHdrFromWindowsDupOrInstallShield(statusObj, outputTopdir, logger, *ar
     return True
 
 decorate(traceLog())
-def extractHdrFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
+def extractBiosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
     try:
@@ -122,9 +126,24 @@ def extractHdrFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **
 
     return True
 
-import firmware_tools_extract as fte
-class noHdrs(fte.DebugExc): pass
-class skip(fte.DebugExc): pass
+
+decorate(traceLog())
+def extractBiosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.exe')
+    common.copyToTmp(statusObj)
+    try:
+        common.loggedCmd(
+            ["extract_hdr_helper.sh", statusObj.tmpfile, "bios.hdr"],
+            timeout=75,
+            cwd=statusObj.tmpdir, logger=logger,
+            env={"WORKINGDIR":statusObj.tmpfile, "DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]})
+
+    except OSError, e:
+        raise skip, "extract_hdr_helper.sh not installed."
+
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+    return True
 
 decorate(traceLog())
 def getHdrIdVer(*paths):
