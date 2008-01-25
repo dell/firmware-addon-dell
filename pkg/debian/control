@@ -3,14 +3,15 @@ Section: admin
 Priority: optional
 Maintainer: Ubuntu MOTU Developers <ubuntu-motu@lists.ubuntu.com>
 XSBC-Original-Maintainer: Michael Brown <Michael_E_Brown@dell.com>
-Build-Depends: debhelper (>= 5), python-all-dev (>= 2.3.5-11),
- cdbs (>= 0.4.43), python-support (>= 0.5.3)
-Standards-Version: 3.7.2
-Homepage: http://linux.dell.com
+Build-Depends: debhelper (>= 5), cdbs (>= 0.4.49)
+Build-Depends-Indep: python-support (>= 0.5.3)
+Standards-Version: 3.7.3
+Homepage: http://linux.dell.com/firmware-tools
 
 Package: firmware-addon-dell
 Architecture: all
-Depends: ${python:Depends}, libsmbios-bin, firmware-tools (>= 1.2)
+Depends: ${python:Depends}, libsmbios-bin
+Python-Depends: firmware-tools (>= 1.2)
 Provides: ${python:Provides}
 Description: A firmware-tools plugin to handle BIOS/Firmware for Dell systems
  The firmware-addon-dell package provides plugins to firmware-tools which enable
