@@ -1,8 +1,13 @@
 
+import ConfigParser
+import glob
+import os
+import shutil
 
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.plugins as plugins
 import extract_common as common
+import biosHdr
 
 __VERSION__ = "1.0"
 plugin_type = (plugins.TYPE_CORE,)
@@ -15,18 +20,40 @@ def config_hook(conduit, *args, **kargs):
     # try/except in case extract plugin not installed
     try:
         import extract_cmd
-        extract_cmd.registerPlugin('dell_bios', testExtract, __VERSION__)
+        extract_cmd.registerPlugin(extractBiosFromLinuxDup, __VERSION__)
     except ImportError, e:
         moduleLog.info("failed to register extract module.")
+        return
+
+    global conf
+    conf = checkConf(conduit.getConf())
+
+true_vals = ("1", "true", "yes", "on")
 
 decorate(traceLog())
-def testExtract(statusObj, outputTopdir, logger, *args, **kargs):
-    common.assertFileExt( statusObj.file, '.bin', '.exe')
+def checkConf(conf):
+    if getattr(conf, "system", None) is None:
+        conf.extract_topdir = os.path.join(firmwaretools.DATADIR, "firmware", "extract")
+
+
+
+decorate(traceLog())
+def extractBiosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.bin')
     common.copyToTmp(statusObj)
-    try:
-        common.doOnce( statusObj, common.dupExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
-    except:
-        pass
+    common.doOnce( statusObj, common.dupExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
+
+    gotOne=False
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+        gotOne=True
+        dest = copyHdr(hdr, id, ver, outputTopdir, logger)
+        shutil.copy( os.path.join(statusObj.tmpdir, "package.xml"), dest)
+
+    return True
+
+decorate(traceLog())
+def test(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.exe')
     try:
         common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
     except:
@@ -36,8 +63,67 @@ def testExtract(statusObj, outputTopdir, logger, *args, **kargs):
     except:
         pass
 
+import firmware_tools_extract as fte
+class noHdrs(fte.InfoExc): pass
 
-def copyHdr(hdrFile, outputDir, logger):
+decorate(traceLog())
+def getHdrIdVer(dir):
+    gotOne = False
+    for i in glob.glob(os.path.join(dir, "*.[hH][dD][rR]")):
+        ver = biosHdr.getBiosHdrVersion(i)
+        for id in biosHdr.getHdrSystemIds(i):
+            gotOne = True
+            yield i, id, ver
+
+    if not gotOne:
+        raise noHdrs
+
+
+decorate(traceLog())
+def copyHdr(hdr, id, ver, destTop, logger):
+    systemName = ("system_bios_ven_0x1028_dev_0x%04x" % id).lower()
+    biosName = ("%s_version_%s" % (systemName, ver)).lower()
+    dest = os.path.join(destTop, biosName)
+    common.safemkdir(dest)
+    shutil.copyfile(hdr, os.path.join(dest, "bios.hdr"))
+
+    packageIni = ConfigParser.ConfigParser()
+    packageIni.read( os.path.join(dest, "package.ini"))
+    if not packageIni.has_section("package"):
+        packageIni.add_section("package")
+
+    common.setIni( packageIni, "package",
+        spec      = "bios",
+        module    = "firmware_addon_dell.dellbios",
+        type      = "BiosPackage",
+        name      = "system_bios(ven_0x1028_dev_0x%04x)" % id,
+        safe_name = systemName,
+        vendor_id = "0x1028",
+        device_id = "0x%04x" % id,
+
+        version        = ver,
+        vendor_version = ver,
+
+        #shortname = common.getShortname("0x1028", "0x%04x" % id))
+    )
+
+    fd = None
+    try:
+        try:
+            os.unlink(os.path.join(dest, "package.ini"))
+        except: pass
+        fd = open( os.path.join(dest, "package.ini"), "w+")
+        packageIni.write( fd )
+    finally:
+        if fd is not None:
+            fd.close()
+
+    return dest
+
+
+
+
+def XXXcopyHdr(hdrFile, outputDir, logger):
     ret = 0
     if not os.path.exists(hdrFile):
        return ret
@@ -68,41 +154,6 @@ def copyHdr(hdrFile, outputDir, logger):
         requires = ""
         if minVer:
             requires = "system_bios(ven_0x1028_dev_0x%04x) >= %s" % (id, minVer)
-
-        packageIni = ConfigParser.ConfigParser()
-        packageIni.read( os.path.join(dest, "package.ini"))
-        if not packageIni.has_section("package"):
-            packageIni.add_section("package")
-
-        dell_repo_tools.extract_common.setIni( packageIni, "package",
-            spec      = "bios",
-            module    = "firmware_addon_dell.dellbios",
-            type      = "BiosPackage",
-            name      = "system_bios(ven_0x1028_dev_0x%04x)" % id,
-            safe_name = systemName,
-            vendor_id = "0x1028",
-            device_id = "0x%04x" % id,
-            requires  = requires,
-
-            version        = ver,
-            rpm_version    = ver,
-            dell_version   = ver,
-            vendor_version = ver,
-
-            force_pkg_regen = 1,
-            extract_ver = version,
-            shortname = dell_repo_tools.extract_common.getShortname("0x1028", "0x%04x" % id))
-
-        fd = None
-        try:
-            try:
-                os.unlink(os.path.join(dest, "package.ini"))
-            except: pass
-            fd = open( os.path.join(dest, "package.ini"), "w+")
-            packageIni.write( fd )
-        finally:
-            if fd is not None:
-                fd.close()
 
     ret = 1
     return ret

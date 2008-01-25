@@ -116,7 +116,8 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
 
     return output
 
-class UnsupportedFileExt(Exception): pass
+import firmware_tools_extract as fte
+class UnsupportedFileExt(fte.InfoExc): pass
 
 decorate(traceLog())
 def assertFileExt(file, *args):
@@ -156,6 +157,25 @@ def cabExtract(sourceFile, cwd, logger=None):
         cwd=cwd, logger=logger,
         )
 
+decorate(traceLog())
+def safemkdir(dest):
+    try:
+        os.makedirs( dest )
+    except OSError: #already exists
+        pass
+
+decorate(traceLog())
+def setIni(ini, section, **kargs):
+    if not ini.has_section(section):
+        ini.add_section(section)
+
+    for (key, item) in kargs.items():
+        ini.set(section, key, item)
+
+
+
+
+
 
 
 
@@ -194,20 +214,6 @@ def appendIniArray(ini, section, option, toAdd):
 
     ini.set(section, option, repr(fn_array))
 
-decorate(traceLog())
-def safemkdir(dest):
-    try:
-        os.makedirs( dest )
-    except OSError: #already exists
-        pass
-
-decorate(traceLog())
-def setIni(ini, section, **kargs):
-    if not ini.has_section(section):
-        ini.add_section(section)
-
-    for (key, item) in kargs.items():
-        ini.set(section, key, item)
 
 decorate(traceLog())
 def getBiosDependencies(packageXml):
