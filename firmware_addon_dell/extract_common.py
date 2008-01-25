@@ -144,7 +144,7 @@ def dupExtract(sourceFile, cwd, logger=None):
             cwd=cwd, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
             )
-    except subprocess.CalledProcessError, e:
+    except (OSError, subprocess.CalledProcessError), e:
         raise CommandFailed, str(e)
 
 decorate(traceLog())
@@ -154,7 +154,7 @@ def zipExtract(sourceFile, cwd, logger=None):
             ["unzip", "-o", sourceFile],
             cwd=cwd, logger=logger,
             )
-    except subprocess.CalledProcessError, e:
+    except (OSError, subprocess.CalledProcessError), e:
         raise CommandFailed, str(e)
 
 decorate(traceLog())
@@ -164,7 +164,7 @@ def cabExtract(sourceFile, cwd, logger=None):
          ["unshield", "x", sourceFile],
          cwd=cwd, logger=logger,
          )
-    except subprocess.CalledProcessError, e:
+    except (OSError, subprocess.CalledProcessError), e:
         raise CommandFailed, str(e)
 
 decorate(traceLog())
@@ -198,32 +198,6 @@ def getShortname(systemConfIni, vendid, sysid):
 
     return ""
 
-
-
-
-
-
-
-
-
-
-decorate(traceLog())
-def appendIniArray(ini, section, option, toAdd):
-    fn_array = []
-    if ini.has_option(section, option):
-        # 1 at end represents raw=1, dont interpolate
-        try:
-            fn_array = eval(ini.get(section, option, 1))
-        except Exception, e:
-            moduleLog.debug("Ignoring error in config file: %s" % e)
-
-    if toAdd not in fn_array:
-        fn_array.append(toAdd)
-        fn_array.sort()
-
-    ini.set(section, option, repr(fn_array))
-
-
 decorate(traceLog())
 def getBiosDependencies(packageXml):
     ''' returns list of supported systems from package xml '''
@@ -234,5 +208,6 @@ def getBiosDependencies(packageXml):
             for dep in HelperXml.iterNodeAttribute(modelElem, "version", "Dependency"):
                 dep = dep.lower()
                 yield (systemId, dep)
+
 
 

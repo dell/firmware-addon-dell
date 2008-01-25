@@ -25,6 +25,9 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     try:
         import extract_cmd
         extract_cmd.registerPlugin(extractBiosFromLinuxDup, __VERSION__)
+        extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
+        extract_cmd.registerPlugin(extractHdrFromWindowsDupOrInstallShield, __VERSION__)
+        extract_cmd.registerPlugin(extractHdrFromPrecisionWindowsExe, __VERSION__)
     except ImportError, e:
         moduleLog.info("failed to register extract module.")
         return
@@ -56,40 +59,91 @@ def extractBiosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.copyToTmp(statusObj)
     common.doOnce( statusObj, common.dupExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
 
+    deps = {}
+    # these are (int, str) tuple
+    for sysId, reqver in common.getBiosDependencies( os.path.join(statusObj.tmpdir,"package.xml")):
+        deps[sysId] = reqver
+
     gotOne=False
     for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
         gotOne=True
-        dest = copyHdr(hdr, id, ver, outputTopdir, logger)
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         shutil.copy( os.path.join(statusObj.tmpdir, "package.xml"), dest)
+
+        #setup deps
+        minVer = deps.get(id)
+        requires = ""
+        if minVer:
+            requires = "system_bios(ven_0x1028_dev_0x%04x) >= %s" % (id, minVer)
+
+        common.setIni(packageIni, "package", requires=requires)
+        writePackageIni(dest, packageIni)
 
     return True
 
 decorate(traceLog())
-def test(statusObj, outputTopdir, logger, *args, **kargs):
-    common.assertFileExt( statusObj.file, '.exe')
-    try:
-        common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
-    except:
-        pass
-    try:
-        common.doOnce( statusObj, common.cabExtract, "data1.cab", statusObj.tmpdir, logger )
-    except:
-        pass
-
-import firmware_tools_extract as fte
-class noHdrs(fte.InfoExc): pass
+def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.hdr')
+    for hdr, id, ver in getHdrIdVer(statusObj.file):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+        for txt in glob.glob( "%s.[Tt][Xx][Tt]" % hdr[:-len(".txt")] ):
+            shutil.copyfile( txt, os.path.join(dest, "info.txt") )
+    return True
 
 decorate(traceLog())
-def getHdrIdVer(dir):
+def extractHdrFromWindowsDupOrInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.exe')
+    common.copyToTmp(statusObj)
+    common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
+    common.doOnce( statusObj, common.cabExtract, "data1.cab", statusObj.tmpdir, logger )
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir,"BiosHeader")):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+
+    return True
+
+decorate(traceLog())
+def extractHdrFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.exe')
+    common.copyToTmp(statusObj)
+    try:
+        common.loggedCmd(["wineserver", "-k"], cwd=statusObj.tmpdir, logger=logger)
+        common.loggedCmd(["wineserver", "-p0"], cwd=statusObj.tmpdir, logger=logger)
+
+        common.loggedCmd(
+            ["wine", statusObj.tmpfile, "-writehdrfile", "-nopause",],
+            timeout=75,
+            cwd=statusObj.tmpdir, logger=logger,
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]})
+    except OSError, e:
+        raise skip, "wine not installed"
+
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+
+    return True
+
+import firmware_tools_extract as fte
+class noHdrs(fte.DebugExc): pass
+class skip(fte.DebugExc): pass
+
+decorate(traceLog())
+def getHdrIdVer(*paths):
     gotOne = False
-    for i in glob.glob(os.path.join(dir, "*.[hH][dD][rR]")):
+    toTry=[]
+    for path in paths:
+        if os.path.isdir(path):
+            toTry.extend(glob.glob(os.path.join(path, "*.[hH][dD][rR]")))
+        else:
+            toTry.append(path)
+
+    for i in toTry:
         ver = biosHdr.getBiosHdrVersion(i)
         for id in biosHdr.getHdrSystemIds(i):
             gotOne = True
             yield i, id, ver
 
     if not gotOne:
-        raise noHdrs
+        raise noHdrs, "No .HDR file found in %s" % dir
 
 
 decorate(traceLog())
@@ -120,54 +174,21 @@ def copyHdr(hdr, id, ver, destTop, logger):
         shortname = common.getShortname(conf.id2name, "0x1028", "0x%04x" % id),
     )
 
+    writePackageIni(dest, packageIni)
+    return dest, packageIni
+
+decorate(traceLog())
+def writePackageIni(dest, ini):
     fd = None
     try:
         try:
             os.unlink(os.path.join(dest, "package.ini"))
         except: pass
         fd = open( os.path.join(dest, "package.ini"), "w+")
-        packageIni.write( fd )
+        ini.write( fd )
     finally:
         if fd is not None:
             fd.close()
 
-    return dest
 
-
-
-
-def XXXcopyHdr(hdrFile, outputDir, logger):
-    ret = 0
-    if not os.path.exists(hdrFile):
-       return ret
-
-    ver = biosHdr.getBiosHdrVersion(hdrFile)
-    logger.info("hdr version: %s\n" % ver)
-    logger.info("hdr system ids: %s\n" % biosHdr.getHdrSystemIds(hdrFile))
-    # ids here are nums
-    for id in biosHdr.getHdrSystemIds(hdrFile):
-        if id in dell_system_id_blacklist:
-            logger.info("Skipping because it is in blacklist: %s\n" % id)
-            continue
-        systemName = ("system_bios_ven_0x1028_dev_0x%04x" % id).lower()
-        biosName = ("%s_version_%s" % (systemName, ver)).lower()
-        dest = os.path.join(outputDir, biosName)
-        common.safemkdir(dest)
-
-        pycompat.copyFile( hdrFile, "%s/bios.hdr" % (dest))
-        pycompat.copyFile( os.path.join(os.path.dirname(hdrFile), "package.xml"), "%s/package.xml" % (dest), ignoreException=1)
-
-        deps = {}
-        # these are (int, str) tuple
-        for sysId, reqver in dell_repo_tools.extract_common.getBiosDependencies( os.path.join(dest,"package.xml")):
-            deps[sysId] = reqver
-
-        #setup deps
-        minVer = deps.get(id)
-        requires = ""
-        if minVer:
-            requires = "system_bios(ven_0x1028_dev_0x%04x) >= %s" % (id, minVer)
-
-    ret = 1
-    return ret
 
