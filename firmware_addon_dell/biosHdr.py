@@ -19,10 +19,12 @@ class PermissionDenied (Exception): pass
 class InternalError (Exception): pass
 class InvalidHdr (Exception): pass
 
+if not "/usr/sbin" in os.environ['PATH'].split(os.path.pathsep):
+    os.environ['PATH'] = os.path.pathsep.join([os.environ.get('PATH',''), "/usr/sbin"])
+
 unit_test_mode = 0
 def cmdFactory_getSystemId():
     if not unit_test_mode:
-        os.environ['PATH'] = os.path.pathsep.join([os.environ.get('PATH',''), "/usr/sbin"])
         status, output = commands.getstatusoutput("""getSystemId""")
         if status != 0:
             raise PermissionDenied("Failed to get System ID: %s" % output)
