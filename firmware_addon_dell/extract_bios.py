@@ -11,6 +11,7 @@ from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.plugins as plugins
 import extract_common as common
 import biosHdr
+from extract_bios_blacklist import dell_system_id_blacklist
 
 __VERSION__ = firmwaretools.__VERSION__
 plugin_type = (plugins.TYPE_CORE,)
@@ -126,7 +127,6 @@ def extractBiosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, *
 
     return True
 
-
 decorate(traceLog())
 def extractBiosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
@@ -164,7 +164,6 @@ def getHdrIdVer(*paths):
     if not gotOne:
         raise noHdrs, "No .HDR file found in %s" % dir
 
-
 decorate(traceLog())
 def copyHdr(hdr, id, ver, destTop, logger):
     systemName = ("system_bios_ven_0x1028_dev_0x%04x" % id).lower()
@@ -192,6 +191,16 @@ def copyHdr(hdr, id, ver, destTop, logger):
 
         shortname = common.getShortname(conf.id2name, "0x1028", "0x%04x" % id),
     )
+
+    if id in dell_system_id_blacklist:
+        common.setIni( packageIni, "package",
+            blacklisted="1",
+            blacklist_reason="Broken RBU implementation.",
+            name = "BLACKLISTED_system_bios(ven_0x1028_dev_0x%04x)" % id,
+            vendor_id = "BLACKLISTED_0x1028",
+            device_id = "BLACKLISTED_0x%04x" % id,
+            safe_name = "BLACKLISTED_%s" % systemName,
+        )
 
     writePackageIni(dest, packageIni)
     return dest, packageIni
