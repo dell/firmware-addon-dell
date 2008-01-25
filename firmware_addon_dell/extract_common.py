@@ -172,19 +172,9 @@ def setIni(ini, section, **kargs):
     for (key, item) in kargs.items():
         ini.set(section, key, item)
 
-
-
-
-
-
-
-
-
-systemConfIni=None
 decorate(traceLog())
-def getShortname(vendid, sysid):
+def getShortname(systemConfIni, vendid, sysid):
     if not systemConfIni:
-        raise fubar("need to configure systemConfIni before continuing... programmer error")
         return ""
 
     if not systemConfIni.has_section("id_to_name"):
@@ -194,9 +184,18 @@ def getShortname(vendid, sysid):
         try:
             return eval(systemConfIni.get("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)))
         except Exception, e:
-            print "Ignoring error in config file: %s" % e
+            moduleLog.debug("Ignoring error in config file: %s" % e)
 
     return ""
+
+
+
+
+
+
+
+
+
 
 decorate(traceLog())
 def appendIniArray(ini, section, option, toAdd):
@@ -206,7 +205,7 @@ def appendIniArray(ini, section, option, toAdd):
         try:
             fn_array = eval(ini.get(section, option, 1))
         except Exception, e:
-            print "Ignoring error in config file: %s" % e
+            moduleLog.debug("Ignoring error in config file: %s" % e)
 
     if toAdd not in fn_array:
         fn_array.append(toAdd)

@@ -15,6 +15,7 @@ plugin_type = (plugins.TYPE_CORE,)
 requires_api_version = "2.0"
 
 moduleLog = getLog()
+conf = None
 
 decorate(traceLog())
 def config_hook(conduit, *args, **kargs):
@@ -33,10 +34,12 @@ true_vals = ("1", "true", "yes", "on")
 
 decorate(traceLog())
 def checkConf(conf):
-    if getattr(conf, "system", None) is None:
-        conf.extract_topdir = os.path.join(firmwaretools.DATADIR, "firmware", "extract")
+    if getattr(conf, "system_id2name_map", None) is None:
+        conf.system_id2name_map = os.path.join(firmwaretools.DATADIR, "firmware-tools", "system_id2name.ini")
 
-
+    conf.id2name = ConfigParser.ConfigParser()
+    conf.id2name.read(conf.system_id2name_map)
+    return conf
 
 decorate(traceLog())
 def extractBiosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
@@ -105,7 +108,7 @@ def copyHdr(hdr, id, ver, destTop, logger):
         version        = ver,
         vendor_version = ver,
 
-        #shortname = common.getShortname("0x1028", "0x%04x" % id))
+        shortname = common.getShortname(conf.id2name, "0x1028", "0x%04x" % id),
     )
 
     fd = None
