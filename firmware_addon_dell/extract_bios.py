@@ -4,12 +4,13 @@ import glob
 import os
 import shutil
 
+import firmwaretools
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.plugins as plugins
 import extract_common as common
 import biosHdr
 
-__VERSION__ = "1.0"
+__VERSION__ = firmwaretools.__VERSION__
 plugin_type = (plugins.TYPE_CORE,)
 requires_api_version = "2.0"
 
