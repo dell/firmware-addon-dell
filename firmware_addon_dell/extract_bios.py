@@ -3,8 +3,10 @@ import ConfigParser
 import glob
 import os
 import shutil
+import subprocess
 
 import firmwaretools
+import firmware_tools_extract as fte
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.plugins as plugins
 import extract_common as common
@@ -18,7 +20,7 @@ moduleLog = getLog()
 conf = None
 
 decorate(traceLog())
-def config_hook(conduit, *args, **kargs):
+def extract_doCheck_hook(conduit, *args, **kargs):
     # try/except in case extract plugin not installed
     try:
         import extract_cmd
@@ -28,17 +30,24 @@ def config_hook(conduit, *args, **kargs):
         return
 
     global conf
-    conf = checkConf(conduit.getConf())
+    conf = checkConf(conduit.getConf(), conduit.getBase().opts)
+
+decorate(traceLog())
+def extract_addSubOptions_hook(conduit, *args, **kargs):
+    conduit.getOptParser().add_option(
+        "--id2name-config", help="Add system id to name mapping config file.",
+        action="append", dest="system_id2name_map", default=[])
 
 true_vals = ("1", "true", "yes", "on")
 
 decorate(traceLog())
-def checkConf(conf):
+def checkConf(conf, opts):
     if getattr(conf, "system_id2name_map", None) is None:
         conf.system_id2name_map = os.path.join(firmwaretools.DATADIR, "firmware-tools", "system_id2name.ini")
 
     conf.id2name = ConfigParser.ConfigParser()
     conf.id2name.read(conf.system_id2name_map)
+    conf.id2name.read(opts.system_id2name_map)
     return conf
 
 decorate(traceLog())

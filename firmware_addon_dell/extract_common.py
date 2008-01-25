@@ -10,6 +10,7 @@ import tempfile
 import time
 import xml.dom.minidom
 
+import firmware_tools_extract as fte
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.HelperXml as HelperXml
@@ -60,7 +61,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
             done = 1
             break
 
-        i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1) 
+        i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1)
         for s in i_rdy:
             # this isnt perfect as a whole line of input may not be
             # ready, but should be "good enough" for now
@@ -85,13 +86,13 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
         start = time.time()
         child = subprocess.Popen(
             cmd, shell=shell, cwd=cwd, env=env,
-            bufsize=0, close_fds=True, 
-            stdin=open("/dev/null", "r"), 
+            bufsize=0, close_fds=True,
+            stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=preexec
-        )    
-        output = logOutput([child.stdout, child.stderr], 
+        )
+        output = logOutput([child.stdout, child.stderr],
                            logger, returnOutput, start, timeout)
     except:
         # kill children if they arent done
@@ -116,8 +117,8 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
 
     return output
 
-import firmware_tools_extract as fte
-class UnsupportedFileExt(fte.InfoExc): pass
+class UnsupportedFileExt(fte.DebugExc): pass
+class CommandFailed(fte.DebugExc): pass
 
 decorate(traceLog())
 def assertFileExt(file, *args):
@@ -131,31 +132,40 @@ def assertFileExt(file, *args):
 
 decorate(traceLog())
 def dupExtract(sourceFile, cwd, logger=None):
-    loggedCmd(
-        ['perl', '-p', '-i', '-e', 's/.*\$_ROOT_UID.*/true ||/; s/grep -an/grep -m1 -an/; s/tail \+/tail -n \+/', sourceFile],
-        cwd=cwd, logger=logger,
-        env={"LANG":"C"}
-        )
+    try:
+        loggedCmd(
+            ['perl', '-p', '-i', '-e', 's/.*\$_ROOT_UID.*/true ||/; s/grep -an/grep -m1 -an/; s/tail \+/tail -n \+/', sourceFile],
+            cwd=cwd, logger=logger,
+            env={"LANG":"C"}
+            )
 
-    loggedCmd(
-        ['sh', '-c', "%s --extract %s" % (sourceFile, cwd)],
-        cwd=cwd, logger=logger,
-        env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
-        )
+        loggedCmd(
+            ['sh', sourceFile, "--extract", cwd],
+            cwd=cwd, logger=logger,
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
+            )
+    except subprocess.CalledProcessError, e:
+        raise CommandFailed, str(e)
 
 decorate(traceLog())
 def zipExtract(sourceFile, cwd, logger=None):
-    loggedCmd(
-        ["unzip", "-o", sourceFile],
-        cwd=cwd, logger=logger,
-        )
+    try:
+        loggedCmd(
+            ["unzip", "-o", sourceFile],
+            cwd=cwd, logger=logger,
+            )
+    except subprocess.CalledProcessError, e:
+        raise CommandFailed, str(e)
 
 decorate(traceLog())
 def cabExtract(sourceFile, cwd, logger=None):
-    loggedCmd(
-        ["unshield", "x", sourceFile],
-        cwd=cwd, logger=logger,
-        )
+    try:
+        loggedCmd(
+         ["unshield", "x", sourceFile],
+         cwd=cwd, logger=logger,
+         )
+    except subprocess.CalledProcessError, e:
+        raise CommandFailed, str(e)
 
 decorate(traceLog())
 def safemkdir(dest):
