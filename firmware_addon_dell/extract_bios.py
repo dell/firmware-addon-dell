@@ -34,7 +34,7 @@ def extract_doCheck_hook(conduit, *args, **kargs):
             extract_cmd.registerPlugin(biosFromPrecisionWindowsExe, __VERSION__)
         if os.path.exists("/usr/bin/unshield"):
             extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
-        if os.path.exists( os.path.join(fad.LIBEXECDIR, "extract_hdr_helper.sh" )):
+        if os.path.exists( os.path.join(fad.PKGLIBEXECDIR, "extract_hdr_helper.sh" )):
             extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
     except ImportError, e:
         moduleLog.info("failed to register extract module.")
@@ -148,7 +148,7 @@ def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.copyToTmp(statusObj)
     try:
         common.loggedCmd(
-            [os.path.join(fad.LIBEXECDIR, "extract_hdr_helper.sh"), statusObj.tmpfile, "bios.hdr"],
+            [os.path.join(fad.PKGLIBEXECDIR, "extract_hdr_helper.sh"), statusObj.tmpfile, "bios.hdr"],
             timeout=75,
             cwd=statusObj.tmpdir, logger=logger,
             env={"WORKINGDIR":statusObj.tmpdir, "DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})

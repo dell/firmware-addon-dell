@@ -47,6 +47,7 @@ install-data-hook:
 	    perl -p -i -e 's|^PKGDATADIR\s*=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
 	    perl -p -i -e 's|^PKGCONFDIR\s*=.*|PKGCONFDIR="$(pkgconfdir)/"|' $$file        ;\
 	    perl -p -i -e 's|^PKGGLADEDIR\s*=.*|PKGGLADEDIR="$(pkgdatadir)"|' $$file        ;\
+	    perl -p -i -e 's|^PKGLIBEXECDIR\s*=.*|PKGLIBEXECDIR="$(pkglibexecdir)"|' $$file        ;\
 	done
 
 install-exec-hook:
@@ -62,6 +63,7 @@ install-exec-hook:
 	    perl -p -i -e 's|^PKGDATADIR\s*=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
 	    perl -p -i -e 's|^PKGCONFDIR\s*=.*|PKGCONFDIR="$(pkgconfdir)"|' $$file        ;\
 	    perl -p -i -e 's|^PKGGLADEDIR\s*=.*|PKGGLADEDIR="$(pkgdatadir)"|' $$file        ;\
+	    perl -p -i -e 's|^PKGLIBEXECDIR\s*=.*|PKGLIBEXECDIR="$(pkglibexecdir)"|' $$file        ;\
 	done
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
