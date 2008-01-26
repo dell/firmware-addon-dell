@@ -18,6 +18,8 @@ from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.HelperXml as HelperXml
 
+moduleLog = getLog()
+
 decorate(traceLog())
 def copyToTmp(statusObj):
     if getattr(statusObj, "tmpdir", None) is not None:
