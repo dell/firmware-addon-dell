@@ -3,7 +3,6 @@ import ConfigParser
 import glob
 import os
 import shutil
-import subprocess
 
 import firmwaretools
 import firmware_extract as fte
@@ -22,7 +21,6 @@ moduleLog = getLog()
 conf = None
 
 class noHdrs(fte.DebugExc): pass
-class skip(fte.DebugExc): pass
 
 decorate(traceLog())
 def extract_doCheck_hook(conduit, *args, **kargs):
@@ -32,9 +30,10 @@ def extract_doCheck_hook(conduit, *args, **kargs):
         extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
         extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
         extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
-        extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
-        if os.path.exists("/usr/bin/unshield"):
+        if os.path.exists("/usr/bin/wine"):
             extract_cmd.registerPlugin(biosFromPrecisionWindowsExe, __VERSION__)
+        if os.path.exists("/usr/bin/unshield"):
+            extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
         if os.path.exists( os.path.join(fad.LIBEXECDIR, "extract_hdr_helper.sh" )):
             extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
     except ImportError, e:
@@ -133,10 +132,10 @@ def biosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs)
             timeout=75,
             cwd=statusObj.tmpdir, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]})
-    except subprocess.CalledProcessError, e:
-        raise skip, "couldnt extract with wine"
+    except common.CommandFailed, e:
+        raise common.skip, "couldnt extract with wine"
     except OSError, e:
-        raise skip, "wine not installed"
+        raise common.skip, "wine not installed"
 
     for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
@@ -154,10 +153,10 @@ def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
             cwd=statusObj.tmpdir, logger=logger,
             env={"WORKINGDIR":statusObj.tmpdir, "DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
 
-    except subprocess.CalledProcessError, e:
-        raise skip, "couldnt extract with extract_hdr_helper.sh"
+    except common.CommandFailed, e:
+        raise common.skip, "couldnt extract with extract_hdr_helper.sh"
     except OSError, e:
-        raise skip, "extract_hdr_helper.sh not installed."
+        raise common.skip, "extract_hdr_helper.sh not installed."
 
     for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)

@@ -4,11 +4,14 @@ from __future__ import generators
 import os
 import select
 import shutil
-import subprocess
 import sys
 import tempfile
 import time
 import xml.dom.minidom
+try:
+    import subprocess
+except ImportError:
+    import compat_subprocess as subprocess
 
 import firmware_extract as fte
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
@@ -76,6 +79,9 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
     return output
 
 class commandTimeoutExpired(Exception): pass
+class CommandFailed(Exception): pass
+class UnsupportedFileExt(fte.DebugExc): pass
+class skip(fte.DebugExc): pass
 
 decorate(traceLog())
 def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, cwd=None, env=None, timeout=0, preexec=None):
@@ -111,14 +117,11 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
 
     if raiseExc and child.returncode:
         if returnOutput:
-            raise subprocess.CalledProcessError, (child.returncode, cmd)
+            raise CommandFailed("The command failed (%s):\n\t# %s\n%s" % (child.returncode, cmd, output))
         else:
-            raise subprocess.CalledProcessError, (child.returncode, cmd)
+            raise CommandFailed("The command failed (%s):\n\t# %s" % (child.returncode, cmd))
 
     return output
-
-class UnsupportedFileExt(fte.DebugExc): pass
-class CommandFailed(fte.DebugExc): pass
 
 decorate(traceLog())
 def assertFileExt(file, *args):
@@ -144,8 +147,8 @@ def dupExtract(sourceFile, cwd, logger=None):
             cwd=cwd, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
             )
-    except (OSError, subprocess.CalledProcessError), e:
-        raise CommandFailed, str(e)
+    except (OSError, CommandFailed), e:
+        raise skip, str(e)
 
 decorate(traceLog())
 def zipExtract(sourceFile, cwd, logger=None):
@@ -154,8 +157,8 @@ def zipExtract(sourceFile, cwd, logger=None):
             ["unzip", "-o", sourceFile],
             cwd=cwd, logger=logger,
             )
-    except (OSError, subprocess.CalledProcessError), e:
-        raise CommandFailed, str(e)
+    except (OSError, CommandFailed), e:
+        raise skip, str(e)
 
 decorate(traceLog())
 def cabExtract(sourceFile, cwd, logger=None):
@@ -164,8 +167,8 @@ def cabExtract(sourceFile, cwd, logger=None):
          ["unshield", "x", sourceFile],
          cwd=cwd, logger=logger,
          )
-    except (OSError, subprocess.CalledProcessError), e:
-        raise CommandFailed, str(e)
+    except (OSError, CommandFailed), e:
+        raise skip, str(e)
 
 decorate(traceLog())
 def safemkdir(dest):
