@@ -138,7 +138,7 @@ def cmdFactory_dellBiosUpdate(filename):
     if not unit_test_mode:
         status, output = commands.getstatusoutput("""dellBiosUpdate -i -f %s""" % filename)
         if status != 0:
-            raise InvalidHdr("(version) Not a BIOS HDR file (%s): %s" % (file,output))
+            raise InvalidHdr(" Not a BIOS HDR file (%s): %s" % (filename,output))
         return output
     else:
         return mockOutput_dellBiosUpdate
