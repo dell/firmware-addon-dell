@@ -173,10 +173,13 @@ def getHdrIdVer(*paths):
             toTry.append(path)
 
     for i in toTry:
-        ver = biosHdr.getBiosHdrVersion(i)
-        for id in biosHdr.getHdrSystemIds(i):
-            gotOne = True
-            yield i, id, ver
+        try:
+            ver = biosHdr.getBiosHdrVersion(i)
+            for id in biosHdr.getHdrSystemIds(i):
+                gotOne = True
+                yield i, id, ver
+        except biosHdr.InvalidHdr, e:
+            pass
 
     if not gotOne:
         raise noHdrs, "No .HDR file found in %s" % dir
