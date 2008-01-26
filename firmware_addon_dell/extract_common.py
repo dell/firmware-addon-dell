@@ -175,6 +175,13 @@ def safemkdir(dest):
         pass
 
 decorate(traceLog())
+def safeunlink(dest):
+    try:
+        os.unlink( dest )
+    except OSError: #already exists
+        pass
+
+decorate(traceLog())
 def setIni(ini, section, **kargs):
     if not ini.has_section(section):
         ini.add_section(section)

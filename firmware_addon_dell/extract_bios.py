@@ -7,6 +7,7 @@ import subprocess
 
 import firmwaretools
 import firmware_tools_extract as fte
+import firmware_addon_dell as fad
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.plugins as plugins
 import extract_common as common
@@ -29,10 +30,13 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     try:
         import extract_cmd
         extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
-        extract_cmd.registerPlugin(extractBiosFromLinuxDup, __VERSION__)
-        extract_cmd.registerPlugin(extractBiosFromWindowsDupOrInstallShield, __VERSION__)
-        extract_cmd.registerPlugin(extractBiosFromPrecisionWindowsExe, __VERSION__)
-        extract_cmd.registerPlugin(extractBiosFromDcopyExe, __VERSION__)
+        extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
+        extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
+        extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
+        if os.path.exists("/usr/bin/unshield"):
+            extract_cmd.registerPlugin(biosFromPrecisionWindowsExe, __VERSION__)
+        if os.path.exists( os.path.join(fad.LIBEXECDIR, "extract_hdr_helper.sh" )):
+            extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
     except ImportError, e:
         moduleLog.info("failed to register extract module.")
         return
@@ -59,7 +63,7 @@ def checkConf(conf, opts):
     return conf
 
 decorate(traceLog())
-def extractBiosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
+def biosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.bin')
     common.copyToTmp(statusObj)
     common.doOnce( statusObj, common.dupExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
@@ -96,7 +100,17 @@ def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
     return True
 
 decorate(traceLog())
-def extractBiosFromWindowsDupOrInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
+def biosFromWindowsDup(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.exe')
+    common.copyToTmp(statusObj)
+    common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir,"BiosHeader")):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+
+    return True
+
+decorate(traceLog())
+def biosFromInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
     common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
@@ -107,7 +121,7 @@ def extractBiosFromWindowsDupOrInstallShield(statusObj, outputTopdir, logger, *a
     return True
 
 decorate(traceLog())
-def extractBiosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
+def biosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
     try:
@@ -119,6 +133,8 @@ def extractBiosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, *
             timeout=75,
             cwd=statusObj.tmpdir, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]})
+    except subprocess.CalledProcessError, e:
+        raise skip, "couldnt extract with wine"
     except OSError, e:
         raise skip, "wine not installed"
 
@@ -128,16 +144,18 @@ def extractBiosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, *
     return True
 
 decorate(traceLog())
-def extractBiosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
+def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
     try:
         common.loggedCmd(
-            ["extract_hdr_helper.sh", statusObj.tmpfile, "bios.hdr"],
+            [os.path.join(fad.LIBEXECDIR, "extract_hdr_helper.sh"), statusObj.tmpfile, "bios.hdr"],
             timeout=75,
             cwd=statusObj.tmpdir, logger=logger,
-            env={"WORKINGDIR":statusObj.tmpfile, "DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]})
+            env={"WORKINGDIR":statusObj.tmpdir, "DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
 
+    except subprocess.CalledProcessError, e:
+        raise skip, "couldnt extract with extract_hdr_helper.sh"
     except OSError, e:
         raise skip, "extract_hdr_helper.sh not installed."
 
@@ -152,7 +170,7 @@ def getHdrIdVer(*paths):
     for path in paths:
         if os.path.isdir(path):
             toTry.extend(glob.glob(os.path.join(path, "*.[hH][dD][rR]")))
-        else:
+        elif os.path.isfile(path):
             toTry.append(path)
 
     for i in toTry:
@@ -201,6 +219,10 @@ def copyHdr(hdr, id, ver, destTop, logger):
             device_id = "BLACKLISTED_0x%04x" % id,
             safe_name = "BLACKLISTED_%s" % systemName,
         )
+
+    # link the logfile, so we always have a log of the last extract for this bios
+    common.safeunlink(os.path.join(dest, "extract.log"))
+    os.link(logger.handlers[0].baseFilename, os.path.join(dest, "extract.log"))
 
     writePackageIni(dest, packageIni)
     return dest, packageIni
