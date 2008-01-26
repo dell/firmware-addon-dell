@@ -123,15 +123,21 @@ decorate(traceLog())
 def biosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
+    env={
+        "DISPLAY":"",
+        "TERM":"",
+        "PATH":os.environ["PATH"],
+        "HOME":os.environ["HOME"],
+        "WINEPREFIX": statusObj.tmpdir,
+        }
     try:
-        common.loggedCmd(["wineserver", "-k"], cwd=statusObj.tmpdir, logger=logger)
-        common.loggedCmd(["wineserver", "-p0"], cwd=statusObj.tmpdir, logger=logger)
-
+        common.loggedCmd(["wineprefixcreate", "-w"], cwd=statusObj.tmpdir, logger=logger, env=env )
         common.loggedCmd(
             ["wine", statusObj.tmpfile, "-writehdrfile", "-nopause",],
             timeout=75,
             cwd=statusObj.tmpdir, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]})
+            env=env)
+        common.loggedCmd(["wineserver", "-k"], cwd=statusObj.tmpdir, logger=logger, env=env)
     except common.CommandFailed, e:
         raise common.skip, "couldnt extract with wine"
     except OSError, e:
