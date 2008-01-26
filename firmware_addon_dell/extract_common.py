@@ -29,10 +29,10 @@ def copyToTmp(statusObj):
     def rmTmp(statusObj, status):
         statusObj.logger.debug("\tremoving tmpdir")
         for (dirpath, dirnames, filenames) in os.walk(statusObj.tmpdir):
-            for f in filenames:
+            for f in filenames + dirnames:
                 path = os.path.join(dirpath, f)
                 oldmode = stat.S_IMODE(os.stat(path)[stat.ST_MODE])
-                os.chmod(path, oldmode | stat.S_IWUSR)
+                os.chmod(path, oldmode | stat.S_IRWXU)
         shutil.rmtree(statusObj.tmpdir)
 
     statusObj.logger.debug("\tcreating temp dir")
