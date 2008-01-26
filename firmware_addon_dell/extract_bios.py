@@ -182,7 +182,7 @@ def getHdrIdVer(*paths):
             pass
 
     if not gotOne:
-        raise noHdrs, "No .HDR file found in %s" % dir
+        raise noHdrs, "No .HDR file found in %s" % str(paths)
 
 decorate(traceLog())
 def copyHdr(hdr, id, ver, destTop, logger):
