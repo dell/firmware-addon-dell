@@ -4,6 +4,7 @@ from __future__ import generators
 import os
 import select
 import shutil
+import stat
 import sys
 import tempfile
 import time
@@ -27,6 +28,11 @@ def copyToTmp(statusObj):
 
     def rmTmp(statusObj, status):
         statusObj.logger.debug("\tremoving tmpdir")
+        for (dirpath, dirnames, filenames) in os.walk(statusObj.tmpdir):
+            for f in filenames:
+                path = os.path.join(dirpath, f)
+                oldmode = stat.S_IMODE(os.stat(path)[stat.ST_MODE])
+                os.chmod(path, oldmode | stat.S_IWUSR)
         shutil.rmtree(statusObj.tmpdir)
 
     statusObj.logger.debug("\tcreating temp dir")
