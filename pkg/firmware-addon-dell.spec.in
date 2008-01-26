@@ -76,8 +76,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/firmware/dell
 %{_exec_prefix}/lib/yum-plugins/*
 %{_datadir}/firmware-tools/system_id2name.ini
-%{_libexecdir}/%{name}/
-            
+%dir %{_libexecdir}/%{name}/
+%attr(0755,root,root) %{_libexecdir}/%{name}/*
+%attr(0444,root,root) %{_libexecdir}/%{name}/extract_hdr_helper.dat
 
 
 %changelog
