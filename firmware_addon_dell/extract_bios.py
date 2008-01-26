@@ -223,8 +223,13 @@ def copyHdr(hdr, id, ver, destTop, logger):
         )
 
     # link the logfile, so we always have a log of the last extract for this bios
-    common.safeunlink(os.path.join(dest, "extract.log"))
-    os.link(logger.handlers[0].baseFilename, os.path.join(dest, "extract.log"))
+    while True:
+        try:
+            common.safeunlink(os.path.join(dest, "extract.log"))
+            os.link(logger.handlers[0].baseFilename, os.path.join(dest, "extract.log"))
+            break
+        except OSError:
+            pass
 
     writePackageIni(dest, packageIni)
     return dest, packageIni
