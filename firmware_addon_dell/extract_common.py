@@ -10,7 +10,7 @@ import tempfile
 import time
 import xml.dom.minidom
 
-import firmware_tools_extract as fte
+import firmware_extract as fte
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.HelperXml as HelperXml
