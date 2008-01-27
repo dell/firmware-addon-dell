@@ -49,7 +49,7 @@ trap "rm -f $MIRROR_DIR/runtime.lock; trap '' HUP TERM QUIT INT EXIT" HUP TERM Q
 
 mkdir -p $MIRROR_DIR/ftp.dell.com
 pushd $MIRROR_DIR/ftp.dell.com
-exclude_list="-X *.iso -X *.ISO -X *.tar.gz -X *.tar -X *management_station* -X *.txt -X *.TXT"
+exclude_list="-X *.iso -X *.ISO -X *.tar.gz -X *.tar -X *management_station*"
 size_range="--size-range=100k-25M"
 options="--use-cache -n -p -e -v --parallel=5 $exclude_list $size_range"
 lftp -c "open ftp://ftp.dell.com; \
