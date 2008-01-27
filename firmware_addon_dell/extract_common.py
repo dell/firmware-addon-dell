@@ -30,6 +30,8 @@ def copyToTmp(statusObj):
         statusObj.logger.debug("\tremoving tmpdir")
         for (dirpath, dirnames, filenames) in os.walk(statusObj.tmpdir):
             for f in filenames + dirnames:
+                if not os.path.isdir(f) and not os.path.isfile(f):
+                    continue
                 path = os.path.join(dirpath, f)
                 oldmode = stat.S_IMODE(os.stat(path)[stat.ST_MODE])
                 os.chmod(path, oldmode | stat.S_IRWXU)
