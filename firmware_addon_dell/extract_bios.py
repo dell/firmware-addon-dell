@@ -38,9 +38,9 @@ def extract_doCheck_hook(conduit, *args, **kargs):
         extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
         extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
         extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
-#        if os.path.exists("/usr/bin/wine"):
-#            setupWine()
-#            extract_cmd.registerPlugin(biosFromPrecisionWindowsExe, __VERSION__)
+        if os.path.exists("/usr/bin/wine"):
+            setupWine()
+            extract_cmd.registerPlugin(biosFromPrecisionWindowsExe, __VERSION__)
         if os.path.exists("/usr/bin/unshield"):
             extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
         if getattr(conf, "helper_dat", None) is not None and os.path.exists(conf.helper_dat):
