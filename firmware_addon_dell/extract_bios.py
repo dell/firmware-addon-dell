@@ -97,7 +97,6 @@ def setupFreedos():
     common.loggedCmd(["tar", "xvjf", conf.helper_dat], cwd=dosprefix, logger=getLog())
     import commands
     status, output = commands.getstatusoutput("uname -m")
-    os.rename(os.path.join(dosprefix, "freedos"), os.path.join(dosprefix, "both"))
     if output.startswith("x86_64"):
         os.rename(os.path.join(dosprefix, "both", "64"), os.path.join(dosprefix, "freedos"))
     else:
@@ -105,6 +104,7 @@ def setupFreedos():
     if not os.path.isdir(os.path.join(os.environ["HOME"], ".dosemu")):
         os.mkdir(os.path.join(os.environ["HOME"], ".dosemu"))
         open(os.path.join(os.environ["HOME"], ".dosemu", "disclaimer"), "w+").close()
+
     atexit.register(shutil.rmtree, dosprefix)
 
 decorate(traceLog())
@@ -204,12 +204,14 @@ def setupFreedosForThisDir(subdir, file):
     dosemu = os.path.join(fdPath, "dosemu.bin")
     globalconf = os.path.join(fdPath, "conf", "global.conf")
     dosemurc = os.path.join(fdPath, "conf", "dosemurc")
-    cmd = [ dosemu, "-I", "video{none}", "-n", "-F", globalconf, "-f", dosemurc, "-E" ]
+    cmd = [ dosemu, "-I", "video{none}", "-n", "-F", globalconf, "-f", dosemurc, "-C", "-E" ]
 
     inp = open( "%s.in" % dosemurc, "r" )
     out = open(dosemurc, "w+")
     for line in inp.readlines():
         line = line.replace("CURRENT_DIRECTORY", fdPath)
+        if "$_vbootfloppy =" in line:
+            line = """$_vbootfloppy = "%s/dos/floppy.img +hd" """ % subdir
         out.write(line)
     out.close()
     inp.close()
@@ -229,6 +231,28 @@ def biosFromDOSExe(statusObj, outputTopdir, logger, *args, **kargs):
             timeout=75,
             cwd=statusObj.tmpdir, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
+
+    except common.CommandFailed, e:
+        raise common.skip, "couldnt extract with extract_hdr_helper.sh"
+    except OSError, e:
+        raise common.skip, "extract_hdr_helper.sh not installed."
+
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir,"dos","freedos")):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+    return True
+
+decorate(traceLog())
+def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.exe')
+    common.copyToTmp(statusObj)
+    common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
+    if not os.path.exists(statusObj.tmpdir, "MAKEDISK.BAT"):
+        raise common.skip, "not a dcopy image."
+
+    cmd = common.doOnce(statusObj, setupFreedosForThisDir, statusObj.tmpdir, statusObj.tmpfile)
+
+    try:
+        pass
 
     except common.CommandFailed, e:
         raise common.skip, "couldnt extract with extract_hdr_helper.sh"
