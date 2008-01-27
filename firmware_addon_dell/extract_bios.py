@@ -133,8 +133,8 @@ def biosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs)
     try:
         common.loggedCmd(["wineprefixcreate", "-w"], cwd=statusObj.tmpdir, logger=logger, env=env )
         common.loggedCmd(
-            ["wine", statusObj.tmpfile, "-writehdrfile", "-nopause",],
-            timeout=75,
+            ["wine", os.path.basename(statusObj.tmpfile), "-writehdrfile", "-nopause",],
+            timeout=75, raiseExc=0,
             cwd=statusObj.tmpdir, logger=logger,
             env=env)
         common.loggedCmd(["wineserver", "-k"], cwd=statusObj.tmpdir, logger=logger, env=env)
