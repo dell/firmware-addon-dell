@@ -6,6 +6,10 @@ import os
 import shutil
 import tempfile
 
+# workaround bug: NameError: global name 'WindowsError' is not defined
+class WindowsError(Exception): pass
+shutil.WindowsError=WindowsError
+
 import firmwaretools
 import firmware_extract as fte
 import firmware_addon_dell as fad
