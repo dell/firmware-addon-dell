@@ -1,8 +1,10 @@
 
+import atexit
 import ConfigParser
 import glob
 import os
 import shutil
+import tempfile
 
 import firmwaretools
 import firmware_extract as fte
@@ -19,6 +21,7 @@ requires_api_version = "2.0"
 
 moduleLog = getLog()
 conf = None
+wineprefix = None
 
 class noHdrs(fte.DebugExc): pass
 
@@ -31,6 +34,17 @@ def extract_doCheck_hook(conduit, *args, **kargs):
         extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
         extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
         if os.path.exists("/usr/bin/wine"):
+            global wineprefix
+            wineprefix = tempfile.mkdtemp(prefix="wineprefix-")
+            env={
+                "DISPLAY":"",
+                "TERM":"",
+                "PATH":os.environ["PATH"],
+                "HOME":os.environ["HOME"],
+                "WINEPREFIX": wineprefix,
+                }
+            common.loggedCmd(["wineprefixcreate", "-w", "--prefix", wineprefix], cwd=wineprefix, env=env, logger=getLog())
+            atexit.register(shutil.rmtree, wineprefix)
             extract_cmd.registerPlugin(biosFromPrecisionWindowsExe, __VERSION__)
         if os.path.exists("/usr/bin/unshield"):
             extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
@@ -123,15 +137,21 @@ decorate(traceLog())
 def biosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
+    thiswineprefix = os.path.join(statusObj.tmpdir, "wine")
     env={
         "DISPLAY":"",
         "TERM":"",
         "PATH":os.environ["PATH"],
         "HOME":os.environ["HOME"],
-        "WINEPREFIX": statusObj.tmpdir,
+        "WINEPREFIX": thiswineprefix
         }
+    shutil.copytree(wineprefix, thiswineprefix, symlinks=True)
     try:
-        common.loggedCmd(["wineprefixcreate", "-w"], cwd=statusObj.tmpdir, logger=logger, env=env )
+        common.loggedCmd(
+            ["ls","-laR", statusObj.tmpdir],
+            timeout=75, raiseExc=0,
+            cwd=statusObj.tmpdir, logger=logger,
+            env=env)
         common.loggedCmd(
             ["wine", os.path.basename(statusObj.tmpfile), "-writehdrfile", "-nopause",],
             timeout=75, raiseExc=0,
