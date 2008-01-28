@@ -11,15 +11,15 @@ import tempfile
 class WindowsError(Exception): pass
 shutil.WindowsError=WindowsError
 
+import firmwaretools
+import firmwaretools.plugins as plugins
+from firmwaretools.trace_decorator import decorate, traceLog, getLog
 try:
     import firmware_extract as fte
 except ImportError:
-    raise DisablePlugin
+    raise plugins.DisablePlugin
 
-import firmwaretools
 import firmware_addon_dell as fad
-from firmwaretools.trace_decorator import decorate, traceLog, getLog
-import firmwaretools.plugins as plugins
 import extract_common as common
 import biosHdr
 from extract_bios_blacklist import dell_system_id_blacklist
