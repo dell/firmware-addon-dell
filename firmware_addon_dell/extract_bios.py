@@ -40,13 +40,13 @@ def extract_doCheck_hook(conduit, *args, **kargs):
         extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
         if os.path.exists("/usr/bin/wine"):
             setupWine()
-            extract_cmd.registerPlugin(biosFromPrecisionWindowsExe, __VERSION__)
+            extract_cmd.registerPlugin(biosFromWindowsExe, __VERSION__)
         if os.path.exists("/usr/bin/unshield"):
             extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
         if getattr(conf, "helper_dat", None) is not None and os.path.exists(conf.helper_dat):
             setupFreedos()
             extract_cmd.registerPlugin(biosFromDOSExe, __VERSION__)
-            #extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
+            extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
     except ImportError, e:
         moduleLog.info("failed to register extract module.")
         return
@@ -166,7 +166,7 @@ def biosFromInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
     return True
 
 decorate(traceLog())
-def biosFromPrecisionWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
+def biosFromWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
     thiswineprefix = os.path.join(statusObj.tmpdir, "wine")
@@ -245,21 +245,49 @@ decorate(traceLog())
 def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
-    common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
-    if not os.path.exists(statusObj.tmpdir, "MAKEDISK.BAT"):
+    dcopydir = os.path.join(statusObj.tmpdir, "dos", "freedos", "dcopy")
+    os.mkdir(dcopydir)
+    os.mkdir(dcopydir + "2")
+    common.doOnce(statusObj, common.zipExtract, statusObj.tmpfile, dcopydir, logger)
+    if not os.path.exists(os.path.join(dcopydir, "MAKEDISK.BAT")):
         raise common.skip, "not a dcopy image."
 
     cmd = common.doOnce(statusObj, setupFreedosForThisDir, statusObj.tmpdir, statusObj.tmpfile)
 
     try:
-        pass
+        for exe in glob.glob(os.path.join(dcopydir, "*.[Ee][Xx][Ee]")):
+            common.loggedCmd(
+                cmd + [ "dcopy\\%s /s a:" % os.path.basename(exe) ],
+                timeout=75,
+                cwd=statusObj.tmpdir, logger=logger,
+                env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
+
+        common.loggedCmd(
+            cmd + [ "copy a:\\*.* c:\\dcopy2" ],
+            timeout=75,
+            cwd=statusObj.tmpdir, logger=logger,
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
+
+        for exe in glob.glob(os.path.join(dcopydir + "2", "*.[Ee][Xx][Ee]")):
+            if "ync.exe" in exe.lower():
+                continue
+            common.loggedCmd(
+                cmd + [ "dcopy2\\%s -writehdrfile" % os.path.basename(exe) ],
+                timeout=10,
+                cwd=statusObj.tmpdir, logger=logger,
+                env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
 
     except common.CommandFailed, e:
         raise common.skip, "couldnt extract with extract_hdr_helper.sh"
     except OSError, e:
-        raise common.skip, "extract_hdr_helper.sh not installed."
+        raise
 
-    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir,"dos","freedos")):
+    for hdr, id, ver in getHdrIdVer(
+            statusObj.tmpdir,
+            os.path.join(statusObj.tmpdir,"dos","freedos"),
+            os.path.join(statusObj.tmpdir,"dos","freedos", "dcopy"),
+            os.path.join(statusObj.tmpdir,"dos","freedos", "dcopy2"),
+            ):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
     return True
 
