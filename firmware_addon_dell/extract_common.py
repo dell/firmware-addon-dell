@@ -31,7 +31,9 @@ def copyToTmp(statusObj):
         for (dirpath, dirnames, filenames) in os.walk(statusObj.tmpdir):
             for f in filenames + dirnames:
                 path = os.path.join(dirpath, f)
-                if not os.path.isdir(path) and not os.path.isfile(path):
+                if os.path.islink(path):
+                    continue
+                if not os.path.isdir(path) and not (os.path.isfile(path)):
                     continue
                 oldmode = stat.S_IMODE(os.stat(path)[stat.ST_MODE])
                 os.chmod(path, oldmode | stat.S_IRWXU)
