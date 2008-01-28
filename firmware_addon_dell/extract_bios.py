@@ -4,7 +4,6 @@ import ConfigParser
 import glob
 import os
 import shutil
-shutil.WindowsError = Exception
 import tempfile
 
 # workaround bug: NameError: global name 'WindowsError' is not defined
