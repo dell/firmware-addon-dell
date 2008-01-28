@@ -6,8 +6,6 @@ Yum plugin to set up repo for hardware-specific repositories.
 import os
 import sys
 
-from firmware_addon_dell.biosHdr import getSystemId, getServiceTag
-
 from yum.plugins import TYPE_CORE
 
 __VERSION__="unreleased_version"
@@ -20,10 +18,11 @@ runInitHook = 1
 def postconfig_hook(conduit):
     conf = conduit.getConf()
     try:
+        import firmware_addon_dell.biosHdr as a
         conf.yumvar["dellsysidpluginver"] = version
-        conf.yumvar["sys_dev_id"] = "0x%04x" % getSystemId()
+        conf.yumvar["sys_dev_id"] = "0x%04x" % a.getSystemId()
         conf.yumvar["sys_ven_id"] = "0x1028"  # hex
-        conf.yumvar["service_tag"] = getServiceTag()
+        conf.yumvar["service_tag"] = a.getServiceTag()
         conf.yumvar["repo_config"] = conduit.confString("main", "repo_config", default="latest")
     except:
         pass
@@ -47,8 +46,11 @@ def init_hook(conduit):
     conf = conduit.getConf()
 
     sysid=0
+    tag = ""
     try:
-        sysid = getSystemId()
+        import firmware_addon_dell.biosHdr as a
+        sysid = a.getSystemId()
+        tag = a.getServiceTag()
     except:
         pass
 
@@ -57,7 +59,7 @@ def init_hook(conduit):
     if sysid:
         conf.yumvar["sys_ven_id"] = "0x1028"  # hex
         conf.yumvar["sys_dev_id"] = "0x%04x" % sysid
-        conf.yumvar["service_tag"] = getServiceTag()
+        conf.yumvar["service_tag"] = tag
         conf.yumvar["repo_config"] = conduit.confString("main", "repo_config", default="latest")
 
     repos = conduit.getRepos()
