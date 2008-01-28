@@ -11,8 +11,12 @@ import tempfile
 class WindowsError(Exception): pass
 shutil.WindowsError=WindowsError
 
+try:
+    import firmware_extract as fte
+except ImportError:
+    raise DisablePlugin
+
 import firmwaretools
-import firmware_extract as fte
 import firmware_addon_dell as fad
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.plugins as plugins
