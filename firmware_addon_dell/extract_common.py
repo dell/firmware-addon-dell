@@ -123,13 +123,21 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
         # kill children if they arent done
         if child is not None and child.returncode is None:
             os.killpg(child.pid, 9)
+            os.waitpid(child.pid, 0)
         raise
 
     # wait until child is done, kill it if it passes timeout
+    niceExit=1
     while child.poll() is None:
         if (time.time() - start)>timeout and timeout!=0:
+            niceExit=0
+            os.killpg(child.pid, 15)
+        if (time.time() - start)>(timeout+1) and timeout!=0:
+            niceExit=0
             os.killpg(child.pid, 9)
-            raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
+
+    if not niceExit:
+        raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
 
     if raiseExc and child.returncode:
         if returnOutput:
