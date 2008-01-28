@@ -88,8 +88,9 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
                 output += line
     return output
 
-class commandTimeoutExpired(Exception): pass
-class CommandFailed(Exception): pass
+class CommandException(Exception): pass
+class commandTimeoutExpired(CommandException): pass
+class CommandFailed(CommandException): pass
 class UnsupportedFileExt(fte.DebugExc): pass
 class skip(fte.DebugExc): pass
 
@@ -171,7 +172,7 @@ def dupExtract(sourceFile, cwd, logger=None):
             cwd=cwd, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
             )
-    except (OSError, CommandFailed), e:
+    except (OSError, CommandException), e:
         raise skip, str(e)
 
 decorate(traceLog())
@@ -181,7 +182,7 @@ def zipExtract(sourceFile, cwd, logger=None):
             ["unzip", "-o", sourceFile],
             cwd=cwd, logger=logger,
             )
-    except (OSError, CommandFailed), e:
+    except (OSError, CommandException), e:
         raise skip, str(e)
 
 decorate(traceLog())
@@ -191,7 +192,7 @@ def cabExtract(sourceFile, cwd, logger=None):
          ["unshield", "x", sourceFile],
          cwd=cwd, logger=logger,
          )
-    except (OSError, CommandFailed), e:
+    except (OSError, CommandException), e:
         raise skip, str(e)
 
 decorate(traceLog())

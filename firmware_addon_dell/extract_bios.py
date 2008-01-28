@@ -189,7 +189,7 @@ def biosFromWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
             cwd=statusObj.tmpdir, logger=logger,
             env=env)
         common.loggedCmd(["wineserver", "-k"], cwd=statusObj.tmpdir, logger=logger, env=env)
-    except common.CommandFailed, e:
+    except (common.CommandException), e:
         raise common.skip, "couldnt extract with wine"
     except OSError, e:
         raise common.skip, "wine not installed"
@@ -236,7 +236,7 @@ def biosFromDOSExe(statusObj, outputTopdir, logger, *args, **kargs):
             cwd=statusObj.tmpdir, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
 
-    except common.CommandFailed, e:
+    except common.CommandException, e:
         raise common.skip, "couldnt extract with extract_hdr_helper.sh"
     except OSError, e:
         raise common.skip, "extract_hdr_helper.sh not installed."
@@ -281,7 +281,7 @@ def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
                 cwd=statusObj.tmpdir, logger=logger,
                 env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "HOME": os.environ["HOME"]})
 
-    except common.CommandFailed, e:
+    except common.CommandException, e:
         raise common.skip, "couldnt extract with extract_hdr_helper.sh"
     except OSError, e:
         raise
