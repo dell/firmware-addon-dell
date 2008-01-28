@@ -94,6 +94,14 @@ class UnsupportedFileExt(fte.DebugExc): pass
 class skip(fte.DebugExc): pass
 
 decorate(traceLog())
+def childSetPgrp(chain=None):
+    def setpgrp():
+        os.setpgrp()
+        if chain is not None:
+            chain()
+    return setpgrp
+
+decorate(traceLog())
 def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, cwd=None, env=None, timeout=0, preexec=None):
     output=None
     child = None
@@ -106,24 +114,22 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
             stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            preexec_fn=preexec
+            preexec_fn=childSetPgrp(preexec),
         )
+
         output = logOutput([child.stdout, child.stderr],
                            logger, returnOutput, start, timeout)
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:
-            os.kill(-child.pid, 15)
-            os.kill(-child.pid, 9)
+            os.killpg(child.pid, 9)
         raise
 
     # wait until child is done, kill it if it passes timeout
     while child.poll() is None:
         if (time.time() - start)>timeout and timeout!=0:
-            os.kill(-child.pid, 15)
-            os.kill(-child.pid, 9)
-            raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (cmd, output))
-
+            os.killpg(child.pid, 9)
+            raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
 
     if raiseExc and child.returncode:
         if returnOutput:
