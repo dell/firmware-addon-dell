@@ -159,6 +159,17 @@ def assertFileExt(file, *args):
         raise UnsupportedFileExt, "File %s does not have a supported extension: %s" % (file, repr(args))
 
 decorate(traceLog())
+def linkLog(dest, logger):
+    # link the logfile, so we always have a log of the last extract for this bios
+    while True:
+        try:
+            safeunlink(os.path.join(dest, "extract.log"))
+            os.link(logger.handlers[0].baseFilename, os.path.join(dest, "extract.log"))
+            break
+        except OSError:
+            pass
+
+decorate(traceLog())
 def dupExtract(sourceFile, cwd, logger=None):
     try:
         loggedCmd(

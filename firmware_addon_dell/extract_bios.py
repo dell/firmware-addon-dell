@@ -331,7 +331,6 @@ def copyHdr(hdr, id, ver, destTop, logger):
         packageIni.add_section("package")
 
     common.setIni( packageIni, "package",
-        spec      = "bios",
         module    = "firmware_addon_dell.dellbios",
         type      = "BiosPackage",
         name      = "system_bios(ven_0x1028_dev_0x%04x)" % id,
@@ -355,14 +354,7 @@ def copyHdr(hdr, id, ver, destTop, logger):
             safe_name = "BLACKLISTED_%s" % systemName,
         )
 
-    # link the logfile, so we always have a log of the last extract for this bios
-    while True:
-        try:
-            common.safeunlink(os.path.join(dest, "extract.log"))
-            os.link(logger.handlers[0].baseFilename, os.path.join(dest, "extract.log"))
-            break
-        except OSError:
-            pass
+    common.linkLog(dest, logger)
 
     writePackageIni(dest, packageIni)
     return dest, packageIni
