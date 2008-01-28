@@ -85,6 +85,7 @@ def checkConf(conf, opts):
 
 decorate(traceLog())
 def setupWine():
+    getLog(prefix="verbose.").info("Running pre-setup for wine.")
     global wineprefix
     wineprefix = tempfile.mkdtemp(prefix="wineprefix-")
     env={
@@ -96,9 +97,11 @@ def setupWine():
         }
     common.loggedCmd(["wineprefixcreate", "-w", "--prefix", wineprefix], cwd=wineprefix, env=env, logger=getLog())
     atexit.register(shutil.rmtree, wineprefix)
+    getLog(prefix="verbose.").info("Wine pre-setup finished.")
 
 decorate(traceLog())
 def setupFreedos():
+    getLog(prefix="verbose.").info("Running pre-setup for freedos.")
     global dosprefix
     dosprefix = tempfile.mkdtemp(prefix="dosprefix-")
     common.loggedCmd(["tar", "xvjf", conf.helper_dat], cwd=dosprefix, logger=getLog())
@@ -113,6 +116,7 @@ def setupFreedos():
         open(os.path.join(os.environ["HOME"], ".dosemu", "disclaimer"), "w+").close()
 
     atexit.register(shutil.rmtree, dosprefix)
+    getLog(prefix="verbose.").info("Freedos pre-setup finished.")
 
 decorate(traceLog())
 def biosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
