@@ -78,7 +78,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/firmware-tools/system_id2name.ini
 %dir %{_libexecdir}/%{name}/
 %attr(0755,root,root) %{_libexecdir}/%{name}/*
-%attr(0444,root,root) %{_libexecdir}/%{name}/extract_hdr_helper.dat
 
 
 %changelog

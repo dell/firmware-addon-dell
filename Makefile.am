@@ -21,8 +21,6 @@ nodist_check_SCRIPTS = test/testAll.py
 pkglibexecdir = $(libexecdir)/$(PACKAGE_NAME)
 dist_pkglibexec_DATA = \
 	libexec/dup_pkginfo.py  \
-	libexec/extract_hdr_helper.dat  \
-	libexec/extract_hdr_helper.sh  \
 	libexec/make_dell_mirror  \
 	libexec/mkbiosrepo.sh
 
