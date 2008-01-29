@@ -123,28 +123,7 @@ def biosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.bin')
     common.copyToTmp(statusObj)
     common.doOnce( statusObj, common.dupExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
-
-    deps = {}
-    # these are (int, str) tuple
-    for sysId, reqver in common.getBiosDependencies( os.path.join(statusObj.tmpdir,"package.xml")):
-        deps[sysId] = reqver
-
-    gotOne=False
-    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
-        gotOne=True
-        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
-        shutil.copy( os.path.join(statusObj.tmpdir, "package.xml"), dest)
-
-        #setup deps
-        minVer = deps.get(id)
-        requires = ""
-        if minVer:
-            requires = "system_bios(ven_0x1028_dev_0x%04x) >= %s" % (id, minVer)
-
-        common.setIni(packageIni, "package", requires=requires)
-        writePackageIni(dest, packageIni)
-
-    return True
+    return genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs)
 
 decorate(traceLog())
 def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
@@ -160,8 +139,32 @@ def biosFromWindowsDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
     common.copyToTmp(statusObj)
     common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
-    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir,"BiosHeader")):
+    return genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs)
+
+decorate(traceLog())
+def genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs):
+    deps = {}
+    packageXml = os.path.join(statusObj.tmpdir, "package.xml")
+    # these are (int, str) tuple
+    for sysId, reqver in common.getBiosDependencies( packageXml):
+        deps[sysId] = reqver
+
+    gotOne=False
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+        gotOne=True
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+        if os.path.exists(os.path.join(dest, "package.xml")):
+            os.unlink(os.path.join(dest, "package.xml"))
+        shutil.copy( packageXml, dest)
+
+        #setup deps
+        minVer = deps.get(id)
+        requires = ""
+        if minVer:
+            requires = "system_bios(ven_0x1028_dev_0x%04x) >= %s" % (id, minVer)
+
+        common.setIni(packageIni, "package", requires=requires)
+        writePackageIni(dest, packageIni)
 
     return True
 
