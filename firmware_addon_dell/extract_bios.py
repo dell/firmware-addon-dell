@@ -35,9 +35,29 @@ dosprefix = None
 class noHdrs(fte.DebugExc): pass
 
 decorate(traceLog())
+def buildrpm_doCheck_hook(conduit, *args, **kargs):
+    global conf
+    conf = checkConf_buildrpm(conduit.getConf(), conduit.getBase().opts)
+    moduleLog.info( "conf: %s" % dir(conf))
+
+    # try/except in case extract plugin not installed
+    try:
+        import firmware_extract.buildrpm as br
+        br.specMapping["BiosPackage"] = conf.biospackagespec
+    except ImportError, e:
+        moduleLog.info("failed to register buildrpm module.")
+        return
+
+decorate(traceLog())
+def checkConf_buildrpm(conf, opts):
+    if getattr(conf, "biospackagespec", None) is None:
+        conf.biospackagespec = None
+    return conf
+
+decorate(traceLog())
 def extract_doCheck_hook(conduit, *args, **kargs):
     global conf
-    conf = checkConf(conduit.getConf(), conduit.getBase().opts)
+    conf = checkConf_extract(conduit.getConf(), conduit.getBase().opts)
 
     # try/except in case extract plugin not installed
     try:
@@ -69,9 +89,8 @@ def extract_addSubOptions_hook(conduit, *args, **kargs):
         action="store", dest="helper_dat", default=None)
 
 true_vals = ("1", "true", "yes", "on")
-
 decorate(traceLog())
-def checkConf(conf, opts):
+def checkConf_extract(conf, opts):
     if getattr(conf, "system_id2name_map", None) is None:
         conf.system_id2name_map = os.path.join(firmwaretools.DATADIR, "firmware-tools", "system_id2name.ini")
 
