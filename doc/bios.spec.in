@@ -1,14 +1,10 @@
 
-# example of how to use this spec file to build a BIOS RPM:
-# rpmbuild
-#	--define "safe_name system_bios_ven_0x1028_dev_0x0183"
-#	--define "name system_bios(ven_0x1028_dev_0x0183)"
-#	--define "vendor_id 0x1028"
-#	--define "device_id 0x0183"
-#	--define "version a05"
-#	--define "shortname PE1800"
-#	--define "revision 1"
-#	-bb /home/michael_e_brown/spec/bios_spec.in
+%define safe_name #safe_name#
+%define name      #name#
+%define vendor_id #vendor_id#
+%define device_id #device_id#
+%define version   #version#
+%define shortname #shortname#
 
 # if passed a "shortname" variable, obsolete older, generated name
 %{?shortname:  %{expand: %%define oldname_exists 1}}
@@ -21,7 +17,7 @@
 Summary:   BIOS upgrade package for System: %{system_shortname}
 Name:      system_bios_%{system_shortname}
 Version:   %{version}
-Release:   18%{?revision:.%{revision}}
+Release:   20
 Vendor:    Dell
 License:   Proprietary
 Group:     System Environment/Base
