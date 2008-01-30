@@ -1,6 +1,7 @@
 
 from __future__ import generators
 
+import fcntl
 import os
 import select
 import shutil
@@ -71,6 +72,13 @@ decorate(traceLog())
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
     output=""
     done = 0
+
+    for fd in fds:
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        if not fd.closed:
+            fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
+
+
     while not done:
         if (time.time() - start)>timeout and timeout!=0:
             done = 1
@@ -78,16 +86,19 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
 
         i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1)
         for s in i_rdy:
-            # this isnt perfect as a whole line of input may not be
-            # ready, but should be "good enough" for now
-            line = s.readline()
-            if line == "":
+            # slurp as much input as is ready
+            input = s.read()
+            if input == "":
                 done = 1
                 break
             if logger is not None:
-                logger.debug(chomp(line))
+                for line in input.split("\n"):
+                    if line == '': continue
+                    logger.debug(chomp(line))
+                for h in logger.handlers:
+                    h.flush()
             if returnOutput:
-                output += line
+                output += input
     return output
 
 class CommandException(Exception): pass
@@ -126,7 +137,11 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
         # kill children if they arent done
         if child is not None and child.returncode is None:
             os.killpg(child.pid, 9)
-            os.waitpid(child.pid, 0)
+        try:
+            if child is not None:
+                os.waitpid(child.pid, 0)
+        except:
+            pass
         raise
 
     # wait until child is done, kill it if it passes timeout
