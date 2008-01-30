@@ -30,11 +30,11 @@ Source0:   %{safe_name}-%{version}.tar.bz2
 Requires:  firmware-addon-dell >= 0:1.1
 Requires:  firmware-tools >= 0:1.1
 #Requires:  dell-bios-blacklist
-Provides:  system_bios(ven_%{vendor_id}_dev_%{device_id}) = %{version}-%{release}
+Provides:  system_bios(ven_%{vendor_id}_dev_%{device_id}) = %{epoch}:%{version}-%{release}
 
 %if %{oldname_exists}
-Obsoletes: system_bios_ven_%{vendor_id}_dev_%{device_id} < %{version}-%{release}
-Provides:  system_bios_ven_%{vendor_id}_dev_%{device_id} = %{version}-%{release}
+Obsoletes: system_bios_ven_%{vendor_id}_dev_%{device_id} < %{epoch}:%{version}-%{release}
+Provides:  system_bios_ven_%{vendor_id}_dev_%{device_id} = %{epoch}:%{version}-%{release}
 %endif
 
 %description
