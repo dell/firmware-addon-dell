@@ -8,7 +8,7 @@ yumconfdir = $(sysconfdir)/yum/pluginconf.d/
 dist_yumconf_DATA = yum-plugin/dellsysidplugin.conf
 
 pkgdatadir = $(datadir)/firmware-tools/
-nodist_pkgdata_DATA = doc/system_id2name.ini doc/bios.spec.in
+nodist_pkgdata_DATA = doc/system_id2name.ini doc/bios.spec.in doc/dell-std-license.txt
 
 pkgconfdir = $(sysconfdir)/firmware/firmware.d/
 nodist_pkgconf_DATA = doc/firmware-addon-dell.conf
