@@ -15,7 +15,10 @@ import firmwaretools.plugins as plugins
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 try:
     import firmware_extract as fte
+    import firmware_extract.buildrpm as br
+    import extract_cmd
 except ImportError:
+    # disable this plugin if firmware_extract not installed
     raise plugins.DisablePlugin
 
 import firmware_addon_dell as fad
@@ -23,6 +26,7 @@ import extract_common as common
 import biosHdr
 from extract_bios_blacklist import dell_system_id_blacklist
 
+# required by the Firmware-Tools plugin API
 __VERSION__ = firmwaretools.__VERSION__
 plugin_type = (plugins.TYPE_CORE,)
 requires_api_version = "2.0"
@@ -34,26 +38,26 @@ dosprefix = None
 
 class noHdrs(fte.DebugExc): pass
 
+# this is called from doCheck in buildrpm_cmd and should register any spec files
+# and hooks this module supports
 decorate(traceLog())
 def buildrpm_doCheck_hook(conduit, *args, **kargs):
     global conf
     conf = checkConf_buildrpm(conduit.getConf(), conduit.getBase().opts)
-    moduleLog.info( "conf: %s" % dir(conf))
+    br.specMapping["BiosPackage"] = {"spec": conf.biospackagespec, "ini_hook": buildrpm_ini_hook}
 
-    # try/except in case extract plugin not installed
-    try:
-        import firmware_extract.buildrpm as br
-        br.specMapping["BiosPackage"] = {"spec": conf.biospackagespec, "ini_hook": buildrpm_ini_hook}
-    except ImportError, e:
-        moduleLog.info("failed to register buildrpm module.")
-        return
-
+# this is called by the buildrpm_doCheck_hook and should ensure that all config
+# options have reasonable default values and that config file values are
+# properly overridden by cmdline options, where applicable.
 decorate(traceLog())
 def checkConf_buildrpm(conf, opts):
     if getattr(conf, "biospackagespec", None) is None:
         conf.biospackagespec = None
     return conf
 
+# this hook is called during the RPM build process. It should munge the ini
+# as appropriate. The INI is used as source for substitutions in the spec
+# file.
 decorate(traceLog())
 def buildrpm_ini_hook(ini):
     ver = ini.get("package", "version")
@@ -100,29 +104,28 @@ def buildrpm_ini_hook(ini):
     ini.set("package", "epoch", "0")
 
 
+# this hook is called by doCheck in extract_cmd.
+# it should register any extract plugins that is supports
 decorate(traceLog())
 def extract_doCheck_hook(conduit, *args, **kargs):
     global conf
     conf = checkConf_extract(conduit.getConf(), conduit.getBase().opts)
 
-    # try/except in case extract plugin not installed
-    try:
-        import extract_cmd
-        extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
-        extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
-        extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
-        if os.path.exists("/usr/bin/wine"):
-            setupWine()
-            extract_cmd.registerPlugin(biosFromWindowsExe, __VERSION__)
-        if os.path.exists("/usr/bin/unshield"):
-            extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
-        if getattr(conf, "helper_dat", None) is not None and os.path.exists(conf.helper_dat):
-            setupFreedos()
-            extract_cmd.registerPlugin(biosFromDOSExe, __VERSION__)
-            extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
-    except ImportError, e:
-        moduleLog.info("failed to register extract module.")
-        return
+    extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
+    extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
+    extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
+    # if wine/unshield/helper_dat not installed, dont register the
+    # respective plugins so that if we run again later with them installed,
+    # it will properly go and try them.
+    if os.path.exists("/usr/bin/wine"):
+        setupWine()
+        extract_cmd.registerPlugin(biosFromWindowsExe, __VERSION__)
+    if os.path.exists("/usr/bin/unshield"):
+        extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
+    if getattr(conf, "helper_dat", None) is not None and os.path.exists(conf.helper_dat):
+        setupFreedos()
+        extract_cmd.registerPlugin(biosFromDOSExe, __VERSION__)
+        extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
 
 
 decorate(traceLog())
