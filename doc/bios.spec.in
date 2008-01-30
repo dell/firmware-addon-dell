@@ -62,7 +62,7 @@ install -m 644 package.ini $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name
 install -m 644 package.xml $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/ || true
 install -m 644 info.txt    $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/ || true
 install -m 644 extract.log $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/ || true
-
+install -m 644 dell-std-license.txt $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/ || true
 
 %clean
 if [ "$RPM_BUILD_ROOT" != "/" ]; then
