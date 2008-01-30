@@ -43,7 +43,7 @@ def buildrpm_doCheck_hook(conduit, *args, **kargs):
     # try/except in case extract plugin not installed
     try:
         import firmware_extract.buildrpm as br
-        br.specMapping["BiosPackage"] = conf.biospackagespec
+        br.specMapping["BiosPackage"] = {"spec": conf.biospackagespec, "ini_hook": buildrpm_ini_hook}
     except ImportError, e:
         moduleLog.info("failed to register buildrpm module.")
         return
@@ -53,6 +53,52 @@ def checkConf_buildrpm(conf, opts):
     if getattr(conf, "biospackagespec", None) is None:
         conf.biospackagespec = None
     return conf
+
+decorate(traceLog())
+def buildrpm_ini_hook(ini):
+    ver = ini.get("package", "version")
+
+    if ver == "unknown":
+        ini.set("package", "epoch", "0")
+
+    # set epoch based on version
+    # old version scheme:
+    #   <any letter>99  --> 10
+    #   P99  --> 20
+    #   T99  --> 30
+    #   X99  --> 40
+    #   A99  --> 50
+    if len(ver) == 3 and ver[0].isalpha() and ver[1].isdigit() and ver[2].isdigit():
+        if ver[0].lower() == "p":
+            ini.set("package", "epoch", "20")
+        elif ver[0].lower() == "t":
+            ini.set("package", "epoch", "30")
+        elif ver[0].lower() == "x":
+            ini.set("package", "epoch", "40")
+        elif ver[0].lower() == "a":
+            ini.set("package", "epoch", "50")
+        else:
+            ini.set("package", "epoch", "10")
+        return
+
+    # new version scheme:
+    #   49.y.z -> 10
+    #   90.y.z -> 20
+    #   x.y.z  -> 30
+    det = ver.split(".")
+    if len(det) == 3:
+        if det[0] == "49":
+            ini.set("package", "epoch", "10")
+        elif int(det[0],10) >= "90":
+            ini.set("package", "epoch", "20")
+        else:
+            ini.set("package", "epoch", "30")
+        return
+
+    # some other really odd format. Set epoch to '0' so any of the above will
+    # override it gracefully
+    ini.set("package", "epoch", "0")
+
 
 decorate(traceLog())
 def extract_doCheck_hook(conduit, *args, **kargs):

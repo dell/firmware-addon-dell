@@ -5,6 +5,7 @@
 %define device_id #device_id#
 %define version   #version#
 %define shortname #shortname#
+%define epoch     #epoch#
 
 # if passed a "shortname" variable, obsolete older, generated name
 %{?shortname:  %{expand: %%define oldname_exists 1}}
@@ -16,6 +17,7 @@
 
 Summary:   BIOS upgrade package for System: %{system_shortname}
 Name:      system_bios_%{system_shortname}
+Epoch:     %{epoch}
 Version:   %{version}
 Release:   20
 Vendor:    Dell
