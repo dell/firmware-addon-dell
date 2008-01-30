@@ -122,7 +122,7 @@ def extract_doCheck_hook(conduit, *args, **kargs):
         extract_cmd.registerPlugin(biosFromWindowsExe, __VERSION__)
     if os.path.exists("/usr/bin/unshield"):
         extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
-    if getattr(conf, "helper_dat", None) is not None and os.path.exists(conf.helper_dat):
+    if os.path.exists(conf.helper_dat):
         setupFreedos()
         extract_cmd.registerPlugin(biosFromDOSExe, __VERSION__)
         extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
@@ -145,6 +145,8 @@ def checkConf_extract(conf, opts):
 
     if opts.helper_dat is not None:
         conf.helper_dat = os.path.realpath(opts.helper_dat)
+    if getattr(conf, "helper_dat", None) is None:
+        conf.helper_dat = ""
 
     conf.id2name = ConfigParser.ConfigParser()
     conf.id2name.read(conf.system_id2name_map)
@@ -410,6 +412,7 @@ def copyHdr(hdr, id, ver, destTop, logger):
     dest = os.path.join(destTop, biosName)
     common.safemkdir(dest)
     shutil.copyfile(hdr, os.path.join(dest, "bios.hdr"))
+    shutil.copyfile(conf.license, os.path.join(dest, os.path.basename(conf.license)))
 
     packageIni = ConfigParser.ConfigParser()
     packageIni.read( os.path.join(dest, "package.ini"))
