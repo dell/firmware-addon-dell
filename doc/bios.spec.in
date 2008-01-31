@@ -4,7 +4,9 @@
 %define vendor_id #vendor_id#
 %define device_id #device_id#
 %define version   #version#
-%define shortname #shortname#
+%if "#shortname#" != ""
+    %define shortname #shortname#
+%endif
 %define epoch     #epoch#
 
 # if passed a "shortname" variable, obsolete older, generated name
