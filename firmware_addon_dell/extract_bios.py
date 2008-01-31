@@ -229,7 +229,7 @@ def genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs):
             shutil.copy( packageXml, dest)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
-        for txt in glob.glob( os.path.join(statusObj.tmpdir, os.path.basename(hdr))[:-len(".hdr")] + ".[Tt][Xx][Tt]")
+        for txt in glob.glob( os.path.join(statusObj.tmpdir, os.path.basename(hdr))[:-len(".hdr")] + ".[Tt][Xx][Tt]"):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
 
         #setup deps
