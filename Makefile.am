@@ -24,10 +24,11 @@ dist_pkglibexec_DATA = \
 	libexec/make_dell_mirror  \
 	libexec/mkbiosrepo.sh
 
+CFLAGS =  -m32 -Wall
 pkglibexec_LTLIBRARIES =\
 	libexec/fakeroot-32.la
 libexec_fakeroot_32_la_LDFLAGS = -module  -shared -m32
-libexec_fakeroot_32_la_CFLAGS =  -m32
+libexec_fakeroot_32_la_CFLAGS =  -m32 -Wall
 libexec_fakeroot_32_la_SOURCES = libexec/fakeroot.c
 
 pkgpython_PYTHON = \
