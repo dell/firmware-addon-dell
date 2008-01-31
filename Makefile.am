@@ -24,14 +24,6 @@ dist_pkglibexec_DATA = \
 	libexec/make_dell_mirror  \
 	libexec/mkbiosrepo.sh
 
-pkglibexec_DATA =\
-	libexec/fakeroot-32.so
-libexec/fakeroot-32.so: libexec/fakeroot.c
-	mkdir libexec || :
-	gcc -o $@ -m32 -Wall -shared $^
-EXTRA_DIST += libexec/fakeroot.c
-CLEANFILES += libexec/fakeroot-32.so
-
 pkgpython_PYTHON = \
 	firmware_addon_dell/__init__.py	\
 	firmware_addon_dell/biosHdr.py   	\
