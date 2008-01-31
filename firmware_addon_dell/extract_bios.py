@@ -215,6 +215,12 @@ def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
             )
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
+
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+        for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
+
     return True
 
 decorate(traceLog())
