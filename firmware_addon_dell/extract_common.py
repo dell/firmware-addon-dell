@@ -69,6 +69,10 @@ def chomp(line):
         return line
 
 decorate(traceLog())
+def pad(s, n):
+    return s[:n] + ' ' * (n-len(s))
+
+decorate(traceLog())
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
     output=""
     done = 0
