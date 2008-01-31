@@ -194,7 +194,7 @@ def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
     for hdr, id, ver in getHdrIdVer(statusObj.file):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
-            shutil.copyfile( txt, os.path.join(dest, "info.txt") )
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
     return True
 
 decorate(traceLog())
@@ -225,7 +225,12 @@ def genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         if os.path.exists(os.path.join(dest, "package.xml")):
             os.unlink(os.path.join(dest, "package.xml"))
-        shutil.copy( packageXml, dest)
+        if os.path.exists(packageXml):
+            shutil.copy( packageXml, dest)
+        for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
+        for txt in glob.glob( os.path.join(statusObj.tmpdir, os.path.basename(hdr))[:-len(".hdr")] + ".[Tt][Xx][Tt]")
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
 
         #setup deps
         minVer = deps.get(id)
@@ -247,7 +252,7 @@ def biosFromInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
     for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir,"BiosHeader")):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
-            shutil.copyfile( txt, os.path.join(dest, "info.txt") )
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
 
     return True
 
@@ -279,7 +284,7 @@ def biosFromWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
-            shutil.copyfile( txt, os.path.join(dest, "info.txt") )
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
 
     return True
 
@@ -328,7 +333,7 @@ def biosFromDOSExe(statusObj, outputTopdir, logger, *args, **kargs):
     for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir,"dos","freedos")):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
-            shutil.copyfile( txt, os.path.join(dest, "info.txt") )
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
     return True
 
 decorate(traceLog())
@@ -380,7 +385,7 @@ def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
             ):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
-            shutil.copyfile( txt, os.path.join(dest, "info.txt") )
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
     return True
 
 decorate(traceLog())
