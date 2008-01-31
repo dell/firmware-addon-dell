@@ -115,6 +115,8 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
     if os.path.exists("/usr/lib/libfakeroot/libfakeroot.so"):
         extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__)
+    else:
+        moduleLog.info("Disabled biosFromLinuxDup2 plugin due to missing fakeroot.i386 package.")
     extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
     # if wine/unshield/helper_dat not installed, dont register the
     # respective plugins so that if we run again later with them installed,
@@ -122,12 +124,19 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     if os.path.exists("/usr/bin/wine"):
         setupWine()
         extract_cmd.registerPlugin(biosFromWindowsExe, __VERSION__)
+    else:
+        moduleLog.info("Disabled biosFromWindowsExe plugin due to missing wine package.")
     if os.path.exists("/usr/bin/unshield"):
         extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
+    else:
+        moduleLog.info("Disabled biosFromWindowsExe plugin due to missing unshield package.")
     if os.path.exists(conf.helper_dat):
         setupFreedos()
         extract_cmd.registerPlugin(biosFromDOSExe, __VERSION__)
         extract_cmd.registerPlugin(biosFromDcopyExe, __VERSION__)
+    else:
+        moduleLog.info("Disabled biosFromDOSExe plugin due to missing dell-repo-tools package.")
+        moduleLog.info("Disabled biosFromDcopyExe plugin due to missing dell-repo-tools package.")
 
 
 decorate(traceLog())
@@ -212,7 +221,7 @@ def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
         common.loggedCmd(
             ['sh', statusObj.tmpfile, "--WriteHDRFile"],
             cwd=statusObj.tmpdir, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so")}
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so"}
             )
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
