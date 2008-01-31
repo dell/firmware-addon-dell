@@ -4,5 +4,6 @@
 
 set -e
 aclocal
+libtoolize -c --force --automake
 automake --force --foreign --add-missing -c
 autoconf --force

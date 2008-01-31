@@ -113,6 +113,7 @@ def extract_doCheck_hook(conduit, *args, **kargs):
 
     extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
     extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
+    extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__)
     extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
     # if wine/unshield/helper_dat not installed, dont register the
     # respective plugins so that if we run again later with them installed,
@@ -195,6 +196,25 @@ def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
+    return True
+
+decorate(traceLog())
+def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.bin')
+    common.copyToTmp(statusObj)
+    try:
+        common.loggedCmd(
+            ['perl', '-p', '-i', '-e', 's/.*\$_ROOT_UID.*/true ||/; s/grep -an/grep -m1 -an/; s/tail \+/tail -n \+/', statusObj.tmpfile],
+            cwd=statusObj.tmpdir, logger=logger,
+            env={"LANG":"C"}
+            )
+        common.loggedCmd(
+            ['sh', statusObj.tmpfile, "--WriteHDRFile"],
+            cwd=statusObj.tmpdir, logger=logger,
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": os.path.join(fad.PKGLIBEXECDIR, "fakeroot-32.so")}
+            )
+    except (OSError, common.CommandException), e:
+        raise common.skip, str(e)
     return True
 
 decorate(traceLog())
