@@ -30,7 +30,6 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 ExclusiveArch: x86_64 ia64 %{ix86}
 
 BuildRequires:  python-devel, firmware-tools, python-decoratortools
-BuildRequires:  /usr/include/gnu/stubs-32.h
 
 # I know rpmlint complains about this (An ERROR, in fact), but it is a
 # false positive. Auto deps cannot find this one because I actually am running
