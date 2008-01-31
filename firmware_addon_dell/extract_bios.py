@@ -113,7 +113,8 @@ def extract_doCheck_hook(conduit, *args, **kargs):
 
     extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
     extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
-    extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__)
+    if os.path.exists("/usr/lib/libfakeroot/libfakeroot.so"):
+        extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__)
     extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
     # if wine/unshield/helper_dat not installed, dont register the
     # respective plugins so that if we run again later with them installed,
@@ -211,7 +212,7 @@ def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
         common.loggedCmd(
             ['sh', statusObj.tmpfile, "--WriteHDRFile"],
             cwd=statusObj.tmpdir, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": os.path.join(fad.PKGLIBEXECDIR, "fakeroot-32.so")}
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so")}
             )
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
