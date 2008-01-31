@@ -88,7 +88,7 @@ def buildrpm_ini_hook(ini):
     # new version scheme:
     #   49.y.z -> 10
     #   90.y.z -> 20
-    #   x.y.z  -> 30
+    #   x.y.z  -> 55  # this is the new spec, so these should supercede old-style if present
     det = ver.split(".")
     if len(det) == 3:
         if det[0] == "49":
@@ -96,7 +96,7 @@ def buildrpm_ini_hook(ini):
         elif int(det[0],10) >= "90":
             ini.set("package", "epoch", "20")
         else:
-            ini.set("package", "epoch", "30")
+            ini.set("package", "epoch", "55")
         return
 
     # some other really odd format. Set epoch to '0' so any of the above will
