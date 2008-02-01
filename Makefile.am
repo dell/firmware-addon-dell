@@ -18,12 +18,6 @@ EXTRA_DIST += doc test COPYING-GPL COPYING-OSL
 TESTS = test/testAll.py
 nodist_check_SCRIPTS = test/testAll.py
 
-pkglibexecdir = $(libexecdir)/$(PACKAGE_NAME)
-dist_pkglibexec_DATA = \
-	libexec/dup_pkginfo.py  \
-	libexec/make_dell_mirror  \
-	libexec/mkbiosrepo.sh
-
 pkgpython_PYTHON = \
 	firmware_addon_dell/__init__.py	\
 	firmware_addon_dell/biosHdr.py   	\
