@@ -2,6 +2,7 @@
 from __future__ import generators
 
 import fcntl
+import gzip
 import os
 import select
 import shutil
@@ -19,6 +20,13 @@ import firmware_extract as fte
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.HelperXml as HelperXml
+
+class CommandException(Exception): pass
+class CommandTimeoutExpired(CommandException): pass
+class CommandFailed(CommandException): pass
+class UnsupportedFileExt(fte.DebugExc): pass
+class skip(fte.DebugExc): pass
+class MarkerNotFound(fte.DebugExc): pass
 
 moduleLog = getLog()
 
@@ -104,12 +112,6 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
             if returnOutput:
                 output += input
     return output
-
-class CommandException(Exception): pass
-class commandTimeoutExpired(CommandException): pass
-class CommandFailed(CommandException): pass
-class UnsupportedFileExt(fte.DebugExc): pass
-class skip(fte.DebugExc): pass
 
 decorate(traceLog())
 def childSetPgrp(chain=None):
@@ -206,6 +208,35 @@ def dupExtract(sourceFile, cwd, logger=None):
             )
     except (OSError, CommandException), e:
         raise skip, str(e)
+
+decorate(traceLog())
+def gzipAfterHeader(inFN, outFN, marker):
+    inFD = open(inFN, "rb")
+    while True:
+        line = inFD.readline()
+        if line=="": # eof
+            raise MarkerNotFound, "didnt find marker(%s) in file." % marker
+
+        if chomp(line) == marker:
+            z = gzip.GzipFile( fileobj = inFD )
+            outFD = open(outFN, "w+")
+            readsize=4096
+            while 1:
+                try:
+                    byte = z.read(readsize)
+                except IOError:
+                    # hit this if there is trailing garbage in gzip file. nonfatal
+                    if readsize == 1: raise
+                    readsize = readsize / 2
+                    continue
+
+                if byte == "": break
+                outFD.write(byte)
+            outFD.close()
+            break
+
+    inFD.close()
+
 
 decorate(traceLog())
 def zipExtract(sourceFile, cwd, logger=None):

@@ -2,8 +2,11 @@
 import atexit
 import ConfigParser
 import glob
+import gzip
 import os
 import shutil
+import stat
+import subprocess
 import tempfile
 
 # workaround bug: NameError: global name 'WindowsError' is not defined
@@ -212,14 +215,15 @@ decorate(traceLog())
 def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.bin')
     common.copyToTmp(statusObj)
+
+    flashbin = os.path.join(statusObj.tmpdir, "flashbin")
+    common.gzipAfterHeader(statusObj.tmpfile, flashbin, "__ARC__")
+    oldmode = stat.S_IMODE(os.stat(flashbin)[stat.ST_MODE])
+    os.chmod(flashbin, oldmode | stat.S_IRWXU)
+
     try:
         common.loggedCmd(
-            ['perl', '-p', '-i', '-e', 's/.*\$_ROOT_UID.*/true ||/; s/grep -an/grep -m1 -an/; s/tail \+/tail -n \+/', statusObj.tmpfile],
-            cwd=statusObj.tmpdir, logger=logger,
-            env={"LANG":"C"}
-            )
-        common.loggedCmd(
-            ['sh', statusObj.tmpfile, "--WriteHDRFile"],
+            [flashbin, "--WriteHDRFile"],
             cwd=statusObj.tmpdir, logger=logger,
             env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so"}
             )
