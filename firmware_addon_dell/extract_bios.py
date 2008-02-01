@@ -33,6 +33,7 @@ from extract_bios_blacklist import dell_system_id_blacklist
 __VERSION__ = firmwaretools.__VERSION__
 plugin_type = (plugins.TYPE_CORE,)
 requires_api_version = "2.0"
+# end: api reqs
 
 moduleLog = getLog()
 conf = None
@@ -118,8 +119,10 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
     if os.path.exists("/usr/lib/libfakeroot/libfakeroot.so"):
         extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__)
+        extract_cmd.registerPlugin(biosFromLinuxDup3, __VERSION__)
     else:
         moduleLog.info("Disabled biosFromLinuxDup2 plugin due to missing fakeroot.i386 package.")
+        moduleLog.info("Disabled biosFromLinuxDup3 plugin due to missing fakeroot.i386 package.")
     extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
     # if wine/unshield/helper_dat not installed, dont register the
     # respective plugins so that if we run again later with them installed,
@@ -167,6 +170,11 @@ def checkConf_extract(conf, opts):
     conf.id2name.read(opts.system_id2name_map)
     return conf
 
+# optimize wine a bit. Since we want to have completely separate wine instances
+# we will set up a master copy (slow) that we can just filecopy (quick) into
+# each individual extract dir. If you dont have separate wine instances, you get
+# massive hangs because some exe's will kill wine, and cause all further calls
+# to wine to hang.
 decorate(traceLog())
 def setupWine():
     getLog(prefix="verbose.").info("Running pre-setup for wine.")
@@ -183,6 +191,8 @@ def setupWine():
     atexit.register(shutil.rmtree, wineprefix)
     getLog(prefix="verbose.").info("Wine pre-setup finished.")
 
+# optimize freedos setup. Untar and set up master copy of the freedos/dosemu
+# tree that we can do a quick filecopy of for each instance.
 decorate(traceLog())
 def setupFreedos():
     getLog(prefix="verbose.").info("Running pre-setup for freedos.")
@@ -202,6 +212,8 @@ def setupFreedos():
     atexit.register(shutil.rmtree, dosprefix)
     getLog(prefix="verbose.").info("Freedos pre-setup finished.")
 
+# simplest extract case: they did the unthinkable and posted a raw .HDR
+# file. awesome! unfortunately no way to get relnotes at all... :(
 decorate(traceLog())
 def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.hdr')
@@ -211,6 +223,10 @@ def alreadyHdr(statusObj, outputTopdir, logger, *args, **kargs):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
     return True
 
+# DUPS for precision are posted inside a small shell gzip self-extractor.
+# they self-extract into a single binary.
+# some of them are broken and will reboot machine if they dont recognize
+# --WriteHDRFile, so we will manually gzip -d them and call the binary
 decorate(traceLog())
 def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.bin')
@@ -237,6 +253,40 @@ def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
 
     return True
 
+# Some DUPS for precision were posted without a shell self-extracting wrapper
+# otherwise same as above. Ensure it is an ELF before we run it.
+decorate(traceLog())
+def biosFromLinuxDup3(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.bin')
+    common.copyToTmp(statusObj)
+
+    fd = open(statusObj.tmpfile, "r")
+    buf = fd.read(4)
+    fd.close()
+    if buf != '\177ELF':
+        raise common.skip, "not an ELF file." 
+
+    oldmode = stat.S_IMODE(os.stat(statusObj.tmpfile)[stat.ST_MODE])
+    os.chmod(statusObj.tmpfile, oldmode | stat.S_IRWXU)
+
+    try:
+        common.loggedCmd(
+            [statusObj.tmpfile, "--WriteHDRFile"],
+            cwd=statusObj.tmpdir, logger=logger,
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so"}
+            )
+    except (OSError, common.CommandException), e:
+        raise common.skip, str(e)
+
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+        for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
+
+    return True
+
+# most "Server" Linux DUPS are gzipped tarballs with a shell self-extractor
+# we call --extract method on them and check for .HDR files.
 decorate(traceLog())
 def biosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.bin')
@@ -244,6 +294,8 @@ def biosFromLinuxDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.doOnce( statusObj, common.dupExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
     return genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs)
 
+# most Server Windows DUPS are self-extracting zip files. We just manually unzip.
+# the python zipfile lib chokes on them, so we have to shell out to 'unzip'
 decorate(traceLog())
 def biosFromWindowsDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
@@ -251,6 +303,8 @@ def biosFromWindowsDup(statusObj, outputTopdir, logger, *args, **kargs):
     common.doOnce( statusObj, common.zipExtract, statusObj.tmpfile, statusObj.tmpdir, logger )
     return genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs)
 
+# after extraction, contents of windows/linux dups are generally the same 
+# at the content level.
 decorate(traceLog())
 def genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs):
     deps = {}
@@ -283,6 +337,9 @@ def genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs):
 
     return True
 
+# installshield format is just a self-extracting zip with an installshield
+# cab file for a payload. unzip first, then unshield and look for header in
+# proper subdir.
 decorate(traceLog())
 def biosFromInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
@@ -296,6 +353,9 @@ def biosFromInstallShield(statusObj, outputTopdir, logger, *args, **kargs):
 
     return True
 
+# this is one of the more popular formats. Cannot manually get the content out
+# so we use wine to call it with -writehdrfile -nopause. The second argument is
+# to keep it from trying to pop up a dialog box.
 decorate(traceLog())
 def biosFromWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
@@ -352,6 +412,8 @@ def setupFreedosForThisDir(subdir, file):
     shutil.copy(file, fdPath)
     return cmd
 
+# somewhat older format. Dos executable that you can use -writehdrfile to
+# extract.
 decorate(traceLog())
 def biosFromDOSExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
@@ -376,6 +438,10 @@ def biosFromDOSExe(statusObj, outputTopdir, logger, *args, **kargs):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
     return True
 
+# horribly convoluted dcopy format. Ugh.
+# unzip to run an exe that writes to a floppy, then take the executable
+# off of the floppy and run it with -writehdrfile. What in the heck were
+# they thinking?
 decorate(traceLog())
 def biosFromDcopyExe(statusObj, outputTopdir, logger, *args, **kargs):
     common.assertFileExt( statusObj.file, '.exe')
