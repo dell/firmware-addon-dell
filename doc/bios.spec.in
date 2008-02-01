@@ -29,9 +29,8 @@ BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-%(id -u)-buildroot/
 Source0:   %{safe_name}-%{version}.tar.bz2
 
-Requires:  firmware-addon-dell >= 0:1.1
-Requires:  firmware-tools >= 0:1.1
-#Requires:  dell-bios-blacklist
+Requires:  firmware-addon-dell >= 0:2.0
+Requires:  firmware-tools >= 0:2.0
 Provides:  system_bios(ven_%{vendor_id}_dev_%{device_id}) = %{epoch}:%{version}-%{release}
 
 %if %{oldname_exists}
@@ -72,7 +71,7 @@ fi
 
 %files
 %defattr(-,root,root)
-#%# doc dell-std-license.txt
+%doc dell-std-license.txt
 %{_datadir}/firmware/dell/*
 
 %posttrans
@@ -80,4 +79,12 @@ fi
 # transaction and all the requisite rpms have been installed. we might
 # have deps on other rpms.
 /usr/sbin/firmwaretool --update --rpm -y
+
+%changelog
+* Thu Jan 31 2008 Michael Brown <mebrown@michaels-house.net> - 20-1
+- Add changelog entries. :)
+- Small packaging changes only to make bios work with firmware-tools 2.0
+- Check for release notes in /usr/share/firmware/dell/SYSTEM/relnotes.txt
+  NOTE: not all systems have release notes. This is due to current limitations
+  with the extraction process.
 
