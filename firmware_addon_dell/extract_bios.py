@@ -144,12 +144,12 @@ def extract_doCheck_hook(conduit, *args, **kargs):
         moduleLog.info("Disabled biosFromDOSExe plugin due to missing dell-repo-tools package.")
         moduleLog.info("Disabled biosFromDcopyExe plugin due to missing dell-repo-tools package.")
 
+shortName = None
 
 decorate(traceLog())
 def extract_addSubOptions_hook(conduit, *args, **kargs):
-    conduit.getOptParser().add_option(
-        "--id2name-config", help="Add system id to name mapping config file.",
-        action="append", dest="system_id2name_map", default=[])
+    global shortName
+    shortName =common.ShortName(conduit.getOptParser())
     conduit.getOptParser().add_option(
         "--helper-dat", help="Path to extract_hdr_helper.dat.",
         action="store", dest="helper_dat", default=None)
@@ -157,17 +157,13 @@ def extract_addSubOptions_hook(conduit, *args, **kargs):
 true_vals = ("1", "true", "yes", "on")
 decorate(traceLog())
 def checkConf_extract(conf, opts):
-    if getattr(conf, "system_id2name_map", None) is None:
-        conf.system_id2name_map = os.path.join(firmwaretools.DATADIR, "firmware-tools", "system_id2name.ini")
+    shortName.check(conf, opts)
 
     if opts.helper_dat is not None:
         conf.helper_dat = os.path.realpath(opts.helper_dat)
     if getattr(conf, "helper_dat", None) is None:
         conf.helper_dat = ""
 
-    conf.id2name = ConfigParser.ConfigParser()
-    conf.id2name.read(conf.system_id2name_map)
-    conf.id2name.read(opts.system_id2name_map)
     return conf
 
 # optimize wine a bit. Since we want to have completely separate wine instances
@@ -541,7 +537,7 @@ def copyHdr(hdr, id, ver, destTop, logger):
         version        = ver,
         vendor_version = ver,
 
-        shortname = common.getShortname(conf.id2name, "0x1028", "0x%04x" % id),
+        shortname = shortName.getShortname("0x1028", "0x%04x" % id),
     )
 
     if id in dell_system_id_blacklist:

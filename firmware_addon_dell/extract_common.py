@@ -1,6 +1,7 @@
 
 from __future__ import generators
 
+import ConfigParser
 import fcntl
 import gzip
 import os
@@ -280,21 +281,41 @@ def setIni(ini, section, **kargs):
     for (key, item) in kargs.items():
         ini.set(section, key, item)
 
-decorate(traceLog())
-def getShortname(systemConfIni, vendid, sysid):
-    if not systemConfIni:
+
+class ShortName(object):
+    def __init__(self, parser, **kargs):
+        self.systemConfIni = None
+        parser.add_option(
+            "--id2name-config", help="Add system id to name mapping config file.",
+            action="append", dest="system_id2name_map", default=[])
+
+    decorate(traceLog())
+    def check(self, conf, opts):
+        self.systemConfIni = ConfigParser.ConfigParser()
+
+        if getattr(conf, "system_id2name_map", None) is not None:
+            self.systemConfIni.read(conf.system_id2name_map)
+        else:
+            self.systemConfIni.read(
+                os.path.join(firmwaretools.DATADIR, "firmware-tools", "system_id2name.ini"))
+
+        self.systemConfIni.read(opts.system_id2name_map)
+
+    decorate(traceLog())
+    def getShortname(self, vendid, sysid):
+        if not self.systemConfIni:
+            return ""
+
+        if not self.systemConfIni.has_section("id_to_name"):
+            return ""
+
+        if self.systemConfIni.has_option("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)):
+            try:
+                return eval(self.systemConfIni.get("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)))
+            except Exception, e:
+                moduleLog.debug("Ignoring error in config file: %s" % e)
+
         return ""
-
-    if not systemConfIni.has_section("id_to_name"):
-        return ""
-
-    if systemConfIni.has_option("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)):
-        try:
-            return eval(systemConfIni.get("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)))
-        except Exception, e:
-            moduleLog.debug("Ignoring error in config file: %s" % e)
-
-    return ""
 
 decorate(traceLog())
 def getBiosDependencies(packageXml):
