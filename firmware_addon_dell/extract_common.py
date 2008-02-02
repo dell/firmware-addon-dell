@@ -162,7 +162,7 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
             os.killpg(child.pid, 9)
 
     if not niceExit:
-        raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
+        raise CommandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
 
     if raiseExc and child.returncode:
         if returnOutput:
