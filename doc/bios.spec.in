@@ -54,20 +54,16 @@ If this package is useful to you, feedback is appreciated.
 %build
 
 %install
-if [ "$RPM_BUILD_ROOT" != "/" ]; then
-	rm -rf $RPM_BUILD_ROOT
-fi
-mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/
-install -m 644 bios.hdr    $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/
-install -m 644 package.ini $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/
-install -m 644 *.xml       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/ || true
-install -m 644 *.txt       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/ || true
-install -m 644 *.log       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/%{safe_name}_version_%{version}/ || true
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/
+install -m 644 bios.hdr    $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/
+install -m 644 package.ini $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/
+install -m 644 *.xml       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/ || true
+install -m 644 *.txt       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/ || true
+install -m 644 *.log       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/ || true
 
 %clean
-if [ "$RPM_BUILD_ROOT" != "/" ]; then
-	rm -rf $RPM_BUILD_ROOT
-fi
+rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
@@ -81,6 +77,9 @@ fi
 /usr/sbin/firmwaretool --update --rpm -y
 
 %changelog
+* Fri Feb 1 2008 Michael Brown <mebrown@michaels-house.net> - 20-1
+- change subdir for packaged bios files to /dell/bios/
+
 * Thu Jan 31 2008 Michael Brown <mebrown@michaels-house.net> - 20-1
 - Add changelog entries. :)
 - Small packaging changes only to make bios work with firmware-tools 2.0
