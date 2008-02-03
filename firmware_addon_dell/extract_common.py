@@ -9,6 +9,7 @@ import select
 import shutil
 import stat
 import sys
+import tarfile
 import tempfile
 import time
 import xml.dom.minidom
@@ -194,50 +195,62 @@ def linkLog(dest, logger):
             pass
 
 decorate(traceLog())
-def dupExtract(sourceFile, cwd, logger=None):
-    try:
-        loggedCmd(
-            ['perl', '-p', '-i', '-e', 's/.*\$_ROOT_UID.*/true ||/; s/grep -an/grep -m1 -an/; s/tail \+/tail -n \+/', sourceFile],
-            cwd=cwd, logger=logger,
-            env={"LANG":"C"}
-            )
-
-        loggedCmd(
-            ['sh', sourceFile, "--extract", cwd],
-            cwd=cwd, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
-            )
-    except (OSError, CommandException), e:
-        raise skip, str(e)
-
-decorate(traceLog())
-def gzipAfterHeader(inFN, outFN, marker):
-    inFD = open(inFN, "rb")
+def findFileMarker(inFD, *markers):
+    moduleLog.debug("look for markers: %s" % repr(markers))
     while True:
         line = inFD.readline()
         if line=="": # eof
-            raise MarkerNotFound, "didnt find marker(%s) in file." % marker
+            raise MarkerNotFound, "didnt find markers in file: %s" % repr(markers)
 
-        if chomp(line) == marker:
-            z = gzip.GzipFile( fileobj = inFD )
-            outFD = open(outFN, "w+")
-            readsize=4096
-            while 1:
-                try:
-                    byte = z.read(readsize)
-                except IOError:
-                    # hit this if there is trailing garbage in gzip file. nonfatal
-                    if readsize == 1: raise
-                    readsize = readsize / 2
-                    continue
+        if [1 for x in markers if line.startswith(x)]:
+            moduleLog.debug("Found marker: -->%s<--" % repr(line))
+            return inFD
 
-                if byte == "": break
-                outFD.write(byte)
-            outFD.close()
-            break
-
+decorate(traceLog())
+def gzipAfterHeader(inFN, outFN, *markers):
+    inFD = open(inFN, "rb")
+    gzFD = gzip.GzipFile(fileobj=findFileMarker(inFD, *markers))
+    outFD = open(outFN, "w+")
+    gunzip(gzFD, outFD)
+    gzFD.close()
+    outFD.close()
     inFD.close()
 
+decorate(traceLog())
+def gunzip(inFD, outFD):
+    readsize=32768
+    while 1:
+        try:
+            byte = inFD.read(readsize)
+        except IOError:
+            # hit this if there is trailing garbage in gzip file. nonfatal
+            if readsize == 1:
+                break
+            else:
+                readsize = readsize / 2
+                continue
+
+        if byte == "": break
+        outFD.write(byte)
+
+dupMarkers = (
+    "#####Startofarchive#####",
+    "#####EndOfScriptFileMarker#",
+    )
+ManifestXmlMarker = "#####Startofpackage#####"
+
+decorate(traceLog())
+def dupExtract(sourceFile, cwd, logger=None):
+    inFD = open(sourceFile, "r")
+    gzFD = gzip.GzipFile(fileobj=findFileMarker(inFD, *dupMarkers))
+    null = open("/dev/null", "w")
+    child = subprocess.Popen( ['tar', 'xf', '-', '-C', cwd],
+            bufsize=0,  stdin=subprocess.PIPE, stdout=null, stderr=null)
+    gunzip(gzFD, child.stdin)
+    child.stdin.close()
+    gzFD.close()
+    null.close()
+    child.wait()
 
 decorate(traceLog())
 def zipExtract(sourceFile, cwd, logger=None):
