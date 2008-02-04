@@ -17,7 +17,7 @@ def getText(nodelist):
     rc = ""
     if nodelist is not None:
         for node in nodelist:
-            if node.nodeType == node.TEXT_NODE:
+            if node.nodeType == node.TEXT_NODE or node.nodeType == node.CDATA_SECTION_NODE:
                 rc = rc + node.data
     return rc
 
