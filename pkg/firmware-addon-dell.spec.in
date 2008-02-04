@@ -75,9 +75,7 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin.conf
 %{_datadir}/firmware/dell
 %{_exec_prefix}/lib/yum-plugins/*
-%{_datadir}/firmware-tools/system_id2name.ini
-%dir %{_libexecdir}/%{name}/
-%attr(0755,root,root) %{_libexecdir}/%{name}/*
+%{_datadir}/firmware-tools/*
 
 
 %changelog

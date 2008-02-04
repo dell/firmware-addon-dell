@@ -1,0 +1,89 @@
+
+%define safe_name #safe_name#
+%define name      #name#
+%define vendor_id #vendor_id#
+%define device_id #device_id#
+%define version   #version#
+%if "#shortname#" != ""
+    %define shortname #shortname#
+%endif
+%define epoch     #epoch#
+
+# if passed a "shortname" variable, obsolete older, generated name
+%{?shortname:  %{expand: %%define oldname_exists 1}}
+%{!?shortname: %{expand: %%define oldname_exists 0}}
+
+# if not passed a "shortname", generate one
+%{?shortname: %{expand: %%define system_shortname %{shortname} }}
+%{!?shortname: %{expand: %%define system_shortname ven_%{vendor_id}_dev_%{device_id} }}
+
+Summary:   BIOS upgrade package for System: %{system_shortname}
+Name:      system_bios_%{system_shortname}
+Epoch:     %{epoch}
+Version:   %{version}
+Release:   20
+Vendor:    Dell
+License:   Proprietary
+Group:     System Environment/Base
+BuildArch: noarch
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-%(id -u)-buildroot/
+Source0:   %{safe_name}-%{version}.tar.bz2
+
+Requires:  firmware-addon-dell >= 0:2.0
+Requires:  firmware-tools >= 0:2.0
+Provides:  system_bios(ven_%{vendor_id}_dev_%{device_id}) = %{epoch}:%{version}-%{release}
+
+%if %{oldname_exists}
+Obsoletes: system_bios_ven_%{vendor_id}_dev_%{device_id} < %{epoch}:%{version}-%{release}
+Provides:  system_bios_ven_%{vendor_id}_dev_%{device_id} = %{epoch}:%{version}-%{release}
+%endif
+
+%description
+This package contains BIOS update version %{version} for System %{system_shortname}
+
+This is an _UNOFFICIAL_ package, not supported by Dell. Do not call Dell
+technical support concerning this package, because you will not get help there.
+Please use the mailing lists for support. firmware-tools-devel@lists.us.dell.com
+would be a good place to start.
+
+If this package is useful to you, feedback is appreciated.
+
+%prep
+%setup -n %{safe_name}_version_%{version}
+
+%build
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/
+install -m 644 bios.hdr    $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/
+install -m 644 package.ini $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/
+install -m 644 *.xml       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/ || true
+install -m 644 *.txt       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/ || true
+install -m 644 *.log       $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios/%{safe_name}_version_%{version}/ || true
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%doc dell-std-license.txt
+%{_datadir}/firmware/dell/*
+
+%posttrans
+# only attempt to update after we have gotten to the end of the
+# transaction and all the requisite rpms have been installed. we might
+# have deps on other rpms.
+/usr/sbin/firmwaretool --update --rpm -y
+
+%changelog
+* Fri Feb 1 2008 Michael Brown <mebrown@michaels-house.net> - 20-1
+- change subdir for packaged bios files to /dell/bios/
+
+* Thu Jan 31 2008 Michael Brown <mebrown@michaels-house.net> - 20-1
+- Add changelog entries. :)
+- Small packaging changes only to make bios work with firmware-tools 2.0
+- Check for release notes in /usr/share/firmware/dell/SYSTEM/relnotes.txt
+  NOTE: not all systems have release notes. This is due to current limitations
+  with the extraction process.
+

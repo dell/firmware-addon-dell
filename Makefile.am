@@ -8,7 +8,7 @@ yumconfdir = $(sysconfdir)/yum/pluginconf.d/
 dist_yumconf_DATA = yum-plugin/dellsysidplugin.conf
 
 pkgdatadir = $(datadir)/firmware-tools/
-nodist_pkgdata_DATA = doc/system_id2name.ini
+nodist_pkgdata_DATA = doc/system_id2name.ini doc/bios.spec.in doc/dell-std-license.txt
 
 pkgconfdir = $(sysconfdir)/firmware/firmware.d/
 nodist_pkgconf_DATA = doc/firmware-addon-dell.conf
@@ -17,13 +17,6 @@ EXTRA_DIST += doc test COPYING-GPL COPYING-OSL
 
 TESTS = test/testAll.py
 nodist_check_SCRIPTS = test/testAll.py
-
-pkglibexecdir = $(libexecdir)/$(PACKAGE_NAME)
-dist_pkglibexec_DATA = \
-	libexec/dup_pkginfo.py  \
-	libexec/make_dell_mirror  \
-	libexec/mkbiosrepo.sh
-
 
 pkgpython_PYTHON = \
 	firmware_addon_dell/__init__.py	\

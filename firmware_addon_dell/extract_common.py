@@ -1,6 +1,9 @@
 
 from __future__ import generators
 
+import ConfigParser
+import fcntl
+import gzip
 import os
 import select
 import shutil
@@ -18,6 +21,13 @@ import firmware_extract as fte
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.HelperXml as HelperXml
+
+class CommandException(Exception): pass
+class CommandTimeoutExpired(CommandException): pass
+class CommandFailed(CommandException): pass
+class UnsupportedFileExt(fte.DebugExc): pass
+class skip(fte.DebugExc): pass
+class MarkerNotFound(fte.DebugExc): pass
 
 moduleLog = getLog()
 
@@ -68,9 +78,20 @@ def chomp(line):
         return line
 
 decorate(traceLog())
+def pad(s, n):
+    return s[:n] + ' ' * (n-len(s))
+
+decorate(traceLog())
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
     output=""
     done = 0
+
+    for fd in fds:
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        if not fd.closed:
+            fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
+
+
     while not done:
         if (time.time() - start)>timeout and timeout!=0:
             done = 1
@@ -78,23 +99,20 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
 
         i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1)
         for s in i_rdy:
-            # this isnt perfect as a whole line of input may not be
-            # ready, but should be "good enough" for now
-            line = s.readline()
-            if line == "":
+            # slurp as much input as is ready
+            input = s.read()
+            if input == "":
                 done = 1
                 break
             if logger is not None:
-                logger.debug(chomp(line))
+                for line in input.split("\n"):
+                    if line == '': continue
+                    logger.debug(chomp(line))
+                for h in logger.handlers:
+                    h.flush()
             if returnOutput:
-                output += line
+                output += input
     return output
-
-class CommandException(Exception): pass
-class commandTimeoutExpired(CommandException): pass
-class CommandFailed(CommandException): pass
-class UnsupportedFileExt(fte.DebugExc): pass
-class skip(fte.DebugExc): pass
 
 decorate(traceLog())
 def childSetPgrp(chain=None):
@@ -126,7 +144,11 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
         # kill children if they arent done
         if child is not None and child.returncode is None:
             os.killpg(child.pid, 9)
-            os.waitpid(child.pid, 0)
+        try:
+            if child is not None:
+                os.waitpid(child.pid, 0)
+        except:
+            pass
         raise
 
     # wait until child is done, kill it if it passes timeout
@@ -140,7 +162,7 @@ def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, 
             os.killpg(child.pid, 9)
 
     if not niceExit:
-        raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
+        raise CommandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
 
     if raiseExc and child.returncode:
         if returnOutput:
@@ -189,6 +211,35 @@ def dupExtract(sourceFile, cwd, logger=None):
         raise skip, str(e)
 
 decorate(traceLog())
+def gzipAfterHeader(inFN, outFN, marker):
+    inFD = open(inFN, "rb")
+    while True:
+        line = inFD.readline()
+        if line=="": # eof
+            raise MarkerNotFound, "didnt find marker(%s) in file." % marker
+
+        if chomp(line) == marker:
+            z = gzip.GzipFile( fileobj = inFD )
+            outFD = open(outFN, "w+")
+            readsize=4096
+            while 1:
+                try:
+                    byte = z.read(readsize)
+                except IOError:
+                    # hit this if there is trailing garbage in gzip file. nonfatal
+                    if readsize == 1: raise
+                    readsize = readsize / 2
+                    continue
+
+                if byte == "": break
+                outFD.write(byte)
+            outFD.close()
+            break
+
+    inFD.close()
+
+
+decorate(traceLog())
 def zipExtract(sourceFile, cwd, logger=None):
     try:
         loggedCmd(
@@ -230,21 +281,41 @@ def setIni(ini, section, **kargs):
     for (key, item) in kargs.items():
         ini.set(section, key, item)
 
-decorate(traceLog())
-def getShortname(systemConfIni, vendid, sysid):
-    if not systemConfIni:
+
+class ShortName(object):
+    def __init__(self, parser, **kargs):
+        self.systemConfIni = None
+        parser.add_option(
+            "--id2name-config", help="Add system id to name mapping config file.",
+            action="append", dest="system_id2name_map", default=[])
+
+    decorate(traceLog())
+    def check(self, conf, opts):
+        self.systemConfIni = ConfigParser.ConfigParser()
+
+        if getattr(conf, "system_id2name_map", None) is not None:
+            self.systemConfIni.read(conf.system_id2name_map)
+        else:
+            self.systemConfIni.read(
+                os.path.join(firmwaretools.DATADIR, "firmware-tools", "system_id2name.ini"))
+
+        self.systemConfIni.read(opts.system_id2name_map)
+
+    decorate(traceLog())
+    def getShortname(self, vendid, sysid):
+        if not self.systemConfIni:
+            return ""
+
+        if not self.systemConfIni.has_section("id_to_name"):
+            return ""
+
+        if self.systemConfIni.has_option("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)):
+            try:
+                return eval(self.systemConfIni.get("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)))
+            except Exception, e:
+                moduleLog.debug("Ignoring error in config file: %s" % e)
+
         return ""
-
-    if not systemConfIni.has_section("id_to_name"):
-        return ""
-
-    if systemConfIni.has_option("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)):
-        try:
-            return eval(systemConfIni.get("id_to_name", "shortname_ven_%s_dev_%s" % (vendid, sysid)))
-        except Exception, e:
-            moduleLog.debug("Ignoring error in config file: %s" % e)
-
-    return ""
 
 decorate(traceLog())
 def getBiosDependencies(packageXml):
