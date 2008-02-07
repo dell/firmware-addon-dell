@@ -24,14 +24,15 @@ import firmware_addon_dell.HelperXml as HelperXml
 
 try:
     import firmware_extract as fte
-    class CommandException(Exception): pass
-    class CommandTimeoutExpired(CommandException): pass
-    class CommandFailed(CommandException): pass
     class UnsupportedFileExt(fte.DebugExc): pass
     class skip(fte.DebugExc): pass
     class MarkerNotFound(fte.DebugExc): pass
 except ImportError:
     pass
+
+class CommandException(Exception): pass
+class CommandTimeoutExpired(CommandException): pass
+class CommandFailed(CommandException): pass
 
 moduleLog = getLog()
 
