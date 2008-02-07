@@ -6,7 +6,6 @@ import gzip
 import os
 import shutil
 import stat
-import subprocess
 import tempfile
 
 # workaround bug: NameError: global name 'WindowsError' is not defined
