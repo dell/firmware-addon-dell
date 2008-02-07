@@ -18,17 +18,20 @@ try:
 except ImportError:
     import compat_subprocess as subprocess
 
-import firmware_extract as fte
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.HelperXml as HelperXml
 
-class CommandException(Exception): pass
-class CommandTimeoutExpired(CommandException): pass
-class CommandFailed(CommandException): pass
-class UnsupportedFileExt(fte.DebugExc): pass
-class skip(fte.DebugExc): pass
-class MarkerNotFound(fte.DebugExc): pass
+try:
+    import firmware_extract as fte
+    class CommandException(Exception): pass
+    class CommandTimeoutExpired(CommandException): pass
+    class CommandFailed(CommandException): pass
+    class UnsupportedFileExt(fte.DebugExc): pass
+    class skip(fte.DebugExc): pass
+    class MarkerNotFound(fte.DebugExc): pass
+except ImportError:
+    pass
 
 moduleLog = getLog()
 
