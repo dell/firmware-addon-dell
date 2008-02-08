@@ -35,6 +35,7 @@ def genPackagesFromSvmXml(xmlstr):
             venId = int(xmlHelp.getNodeAttribute(nodeElem, "vendorID"), 16)
             devId = int(xmlHelp.getNodeAttribute(nodeElem, "deviceID"), 16)
             name = "pci_firmware(ven_0x%04x_dev_0x%04x)".lower() % (venId, devId)
+            otherAttrs["xmlNode"] = nodeElem
 
             try:
                 subdevId = int(xmlHelp.getNodeAttribute(nodeElem, "subDeviceID"), 16)

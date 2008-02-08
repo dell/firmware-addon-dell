@@ -82,7 +82,7 @@ class BiosPackage(package.RepositoryPackage):
 import traceback
 
 # standard entry point -- Bootstrap
-def BootstrapGenerator(): 
+def BootstrapGenerator(*args, **kargs):
     sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
 
@@ -111,7 +111,7 @@ def BootstrapGenerator():
 # standard entry point -- Inventory
 #  -- this is a generator function, but system can only have one system bios,
 #     so, only one yield, no loop
-def InventoryGenerator(): 
+def InventoryGenerator(*args, **kargs):
     sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
     p = package.Device(
