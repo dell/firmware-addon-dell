@@ -62,7 +62,7 @@ def checkConf_buildrpm(conf, opts):
 # as appropriate. The INI is used as source for substitutions in the spec
 # file.
 decorate(traceLog())
-def buildrpm_ini_hook(ini):
+def buildrpm_ini_hook(ini, pkgdir=None):
     ver = ini.get("package", "version")
 
     if ver == "unknown":
