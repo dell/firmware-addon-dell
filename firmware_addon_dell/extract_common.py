@@ -298,13 +298,19 @@ def setIni(ini, section, **kargs):
     for (key, item) in kargs.items():
         ini.set(section, key, item)
 
+def ShortName(parser, **kargs):
+    if _ShortName.instance is None:
+        _ShortName.instance = _ShortName(parser, **kargs)
+    return _ShortName.instance
 
-class ShortName(object):
+class _ShortName(object):
+    instance = None
     def __init__(self, parser, **kargs):
         self.systemConfIni = None
-        parser.add_option(
-            "--id2name-config", help="Add system id to name mapping config file.",
-            action="append", dest="system_id2name_map", default=[])
+        if parser.get_option("--id2name-config") is None:
+            parser.add_option(
+                "--id2name-config", help="Add system id to name mapping config file.",
+                action="append", dest="system_id2name_map", default=[])
 
     decorate(traceLog())
     def check(self, conf, opts):
