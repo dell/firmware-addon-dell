@@ -231,7 +231,7 @@ def gunzip(inFD, outFD):
             if readsize == 1:
                 break
             else:
-                readsize = readsize / 2
+                readsize = 1
                 continue
 
         if byte == "": break
@@ -346,7 +346,9 @@ def getBiosDependencies(packageXml):
     if os.path.exists( packageXml ):
         dom = xml.dom.minidom.parse(packageXml)
         for modelElem in HelperXml.iterNodeElement(dom, "SoftwareComponent", "SupportedSystems", "Brand", "Model"):
-            systemId = int(HelperXml.getNodeAttribute(modelElem, "systemID"),16)
+            systemId = HelperXml.getNodeAttribute(modelElem, "systemID")
+            if not systemId: continue
+            systemId = int(systemId,16)
             for dep in HelperXml.iterNodeAttribute(modelElem, "version", "Dependency"):
                 dep = dep.lower()
                 yield (systemId, dep)
