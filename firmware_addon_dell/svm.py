@@ -26,46 +26,70 @@ import HelperXml as xmlHelp
 #
 # loathe SVM team. What kind of idiots specify hex values in a dtd without leading 0x? Are bus/device/function also hex? Who knows?
 
+# more sample XML:
+
+#<?xml version="1.0" encoding="UTF-8"?>
+#<SVMInventory lang="en">
+#  <Device vendorID="1000" deviceID="0060" subDeviceID="1F0C" subVendorID="1028" bus="5" device="0" function="0" display="PERC 6/i Integrated Controller 0" impactsTPMmeasurements="TRUE">
+#    <Application componentType="FRMW" version="6.0.1-0080" display="PERC 6/i Integrated Controller 0 Firmware"/>
+#  </Device>
+#  <Device componentID="13313" enum="CtrlId 0 DeviceId 0" display="ST973402SS">
+#    <Application componentType="FRMW" version="S206" display="ST973402SS Firmware"/>
+#  </Device>
+#  <Device componentID="00000" enum="CtrlId 0 DeviceId 1" display="ST936701SS">
+#     <Application componentType="FRMW" version="S103" display="ST936701SS Firmware"/>
+#  </Device>
+#  <Device componentID="11204" enum="CtrlId 0 DeviceId 20 Backplane" display="SAS/SATA Backplane 0:0 Backplane">
+#    <Application componentType="FRMW" version="1.05" display="SAS/SATA Backplane 0:0 Backplane Firmware"/>
+#  </Device>
+# </SVMInventory>
+
+pciShortFirmStr = "pci_firmware(ven_0x%04x_dev_0x%04x)"
+pciFullFirmStr = "pci_firmware(ven_0x%04x_dev_0x%04x_subven_0x%04x_subdev_0x%04x)"
+
 def genPackagesFromSvmXml(xmlstr):
     otherAttrs={}
     dom = xml.dom.minidom.parseString(xmlstr)
     for nodeElem in xmlHelp.iterNodeElement( dom, "SVMInventory", "Device" ):
-        try:
-        
-            venId = int(xmlHelp.getNodeAttribute(nodeElem, "vendorID"), 16)
-            devId = int(xmlHelp.getNodeAttribute(nodeElem, "deviceID"), 16)
-            name = "pci_firmware(ven_0x%04x_dev_0x%04x)".lower() % (venId, devId)
+        type = package.Device
+        name = None
+        componentId = xmlHelp.getNodeAttribute(nodeElem, "componentID")
+        venId = xmlHelp.getNodeAttribute(nodeElem, "vendorID")
+        devId = xmlHelp.getNodeAttribute(nodeElem, "deviceID")
+        subdevId = xmlHelp.getNodeAttribute(nodeElem, "subDeviceID")
+        subvenId = xmlHelp.getNodeAttribute(nodeElem, "subVendorID")
+        displayname =  xmlHelp.getNodeAttribute(nodeElem, "display", ("Application", {"componentType":"FRMW"}))
+        ver = xmlHelp.getNodeAttribute(nodeElem, "version", ("Application", {"componentType":"FRMW"}))
+        bus = xmlHelp.getNodeAttribute(nodeElem, "bus")
+        device = xmlHelp.getNodeAttribute(nodeElem, "device")
+        function = xmlHelp.getNodeAttribute(nodeElem, "function")
+
+        if venId and devId:
+            venId = int(venId, 16)
+            devId = int(devId, 16)
+            name = pciShortFirmStr % (venId, devId)
             otherAttrs["xmlNode"] = nodeElem
+            if subvenId and subdevId:
+                subdevId = int(subdevId,16)
+                subvenId = int(subvenId,16)
+                name = pciFullFirmStr % (venId, devId, subvenId, subdevId)
+        else:
+            componentId = int(componentId,10)
+            name = "dell_dup_componentid_%05d" % componentId
 
-            try:
-                subdevId = int(xmlHelp.getNodeAttribute(nodeElem, "subDeviceID"), 16)
-                subvenId = int(xmlHelp.getNodeAttribute(nodeElem, "subVendorID"), 16)
-                name = "pci_firmware(ven_0x%04x_dev_0x%04x_subven_0x%04x_subdev_0x%04x)".lower() % (venId, devId, subvenId, subdevId)
-            except TypeError:
-                pass
+        if bus and device and function:
+            bus = int(bus, 16)
+            device = int(device, 16)
+            function = int(function, 16)
+            otherAttrs["pciDbdf"] = (0, bus, device, function)
+            type = package.PciDevice
 
-            try:
-                bus = int(xmlHelp.getNodeAttribute(nodeElem, "bus"), 16)
-                device = int(xmlHelp.getNodeAttribute(nodeElem, "device"), 16)
-                function = int(xmlHelp.getNodeAttribute(nodeElem, "function"), 16)
-                otherAttrs["pciDbdf"] = (0, bus, device, function)
-            except TypeError:
-                pass
+        if not name:
+            continue
 
-            displayname =  xmlHelp.getNodeAttribute(nodeElem, "display", ("Application", {"componentType":"FRMW"}))
-            ver = xmlHelp.getNodeAttribute(nodeElem, "version", ("Application", {"componentType":"FRMW"}))
-    
-            type = package.Device
-            if otherAttrs.get("pciDbdf"):
-                type = package.PciDevice
-
-            p = type(
-                name=name,
-                version = ver.lower(),
-                displayname=displayname,
-                **otherAttrs
-                )
-
-            yield p
-        except:
-            raise
+        yield type(
+            name=name,
+            version = ver.lower(),
+            displayname=displayname,
+            **otherAttrs
+            )
