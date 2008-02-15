@@ -114,15 +114,6 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     global conf
     conf = checkConf_extract(conduit.getConf(), conduit.getBase().opts)
 
-    extract_cmd.registerPlugin(alreadyHdr, __VERSION__)
-    extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__)
-    if os.path.exists("/usr/lib/libfakeroot/libfakeroot.so"):
-        extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__)
-        extract_cmd.registerPlugin(biosFromLinuxDup3, __VERSION__)
-    else:
-        moduleLog.info("Disabled biosFromLinuxDup2 plugin due to missing fakeroot.i386 package.")
-        moduleLog.info("Disabled biosFromLinuxDup3 plugin due to missing fakeroot.i386 package.")
-    extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__)
     # if wine/unshield/helper_dat not installed, dont register the
     # respective plugins so that if we run again later with them installed,
     # it will properly go and try them.
@@ -131,10 +122,12 @@ def extract_doCheck_hook(conduit, *args, **kargs):
         extract_cmd.registerPlugin(biosFromWindowsExe, __VERSION__)
     else:
         moduleLog.info("Disabled biosFromWindowsExe plugin due to missing wine package.")
+
     if os.path.exists("/usr/bin/unshield"):
         extract_cmd.registerPlugin(biosFromInstallShield, __VERSION__)
     else:
         moduleLog.info("Disabled biosFromWindowsExe plugin due to missing unshield package.")
+
     if os.path.exists(conf.helper_dat):
         setupFreedos()
         extract_cmd.registerPlugin(biosFromDOSExe, __VERSION__)
@@ -142,6 +135,20 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     else:
         moduleLog.info("Disabled biosFromDOSExe plugin due to missing dell-repo-tools package.")
         moduleLog.info("Disabled biosFromDcopyExe plugin due to missing dell-repo-tools package.")
+
+    # register these in reverse priority order because we are using registerFront feature
+    extract_cmd.registerPlugin(alreadyHdr, __VERSION__, registerFront=True)
+
+    if os.path.exists("/usr/lib/libfakeroot/libfakeroot.so"):
+        extract_cmd.registerPlugin(biosFromLinuxDup3, __VERSION__, registerFront=True)
+        extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__, registerFront=True)
+    else:
+        moduleLog.info("Disabled biosFromLinuxDup2 plugin due to missing fakeroot.i386 package.")
+        moduleLog.info("Disabled biosFromLinuxDup3 plugin due to missing fakeroot.i386 package.")
+
+    extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__, registerFront=True)
+    extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__, registerFront=True)
+
 
 shortName = None
 
