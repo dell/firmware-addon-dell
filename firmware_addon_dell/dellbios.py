@@ -82,7 +82,7 @@ class BiosPackage(package.RepositoryPackage):
 import traceback
 
 # standard entry point -- Bootstrap
-def BootstrapGenerator(*args, **kargs):
+def BootstrapGenerator(base=None, cb=None, *args, **kargs):
     sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
 
@@ -103,7 +103,7 @@ def BootstrapGenerator(*args, **kargs):
     module = __import__(pymod, globals(),  locals(), [])
     for i in pymod.split(".")[1:]:
         module = getattr(module, i)
-    for pkg in module.BootstrapGenerator():
+    for pkg in module.BootstrapGenerator(base=base, cb=cb, *args, **kargs):
         pkg.name = "%s/%s" % (pkg.name, "system(ven_0x1028_dev_0x%04x)" % sysId)
         yield pkg
 
