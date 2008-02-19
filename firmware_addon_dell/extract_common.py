@@ -212,9 +212,9 @@ def findFileMarker(inFD, *markers):
 
 decorate(traceLog())
 def gzipAfterHeader(inFN, outFN, *markers):
-    inFD = open(inFN, "rb")
+    inFD = open(inFN, "rb", 0)
     gzFD = gzip.GzipFile(fileobj=findFileMarker(inFD, *markers))
-    outFD = open(outFN, "w+")
+    outFD = open(outFN, "w+", 0)
     gunzip(gzFD, outFD)
     gzFD.close()
     outFD.close()
@@ -236,6 +236,7 @@ def gunzip(inFD, outFD):
 
         if byte == "": break
         outFD.write(byte)
+        outFD.flush()
 
 dupMarkers = (
     "#####Startofarchive#####",
@@ -245,13 +246,15 @@ ManifestXmlMarker = "#####Startofpackage#####"
 
 decorate(traceLog())
 def dupExtract(sourceFile, cwd, logger=None):
-    inFD = open(sourceFile, "r")
+    inFD = open(sourceFile, "r", 0)
     gzFD = gzip.GzipFile(fileobj=findFileMarker(inFD, *dupMarkers))
-    null = open("/dev/null", "w")
+    null = open("/dev/null", "w", 0)
     child = subprocess.Popen( ['tar', 'xf', '-', '-C', cwd],
             bufsize=0,  stdin=subprocess.PIPE, stdout=null, stderr=null)
     gunzip(gzFD, child.stdin)
+    child.stdin.flush()
     child.stdin.close()
+    gzFD.flush()
     gzFD.close()
     null.close()
     child.wait()
