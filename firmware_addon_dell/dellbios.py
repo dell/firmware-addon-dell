@@ -82,7 +82,7 @@ class BiosPackage(package.RepositoryPackage):
 import traceback
 
 # standard entry point -- Bootstrap
-def BootstrapGenerator(*args, **kargs):
+def BootstrapGenerator(base=None, cb=None, *args, **kargs):
     sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
 
