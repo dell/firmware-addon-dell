@@ -128,16 +128,18 @@ def childSetPgrp(chain=None):
     return setpgrp
 
 decorate(traceLog())
-def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, cwd=None, env=None, timeout=0, preexec=None):
+def loggedCmd(cmd, logger=None, returnOutput=False, raiseExc=True, shell=False, cwd=None, env=None, timeout=0, preexec=None, stdin=None):
     output=None
     child = None
+    if stdin is None:
+        stdin = open("/dev/null", "r")
     try:
         logger.debug("Running command: %s" % ' '.join(cmd))
         start = time.time()
         child = subprocess.Popen(
             cmd, shell=shell, cwd=cwd, env=env,
             bufsize=0, close_fds=True,
-            stdin=open("/dev/null", "r"),
+            stdin=stdin,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=childSetPgrp(preexec),
@@ -247,17 +249,15 @@ ManifestXmlMarker = "#####Startofpackage#####"
 decorate(traceLog())
 def dupExtract(sourceFile, cwd, logger=None):
     inFD = open(sourceFile, "r", 0)
-    gzFD = gzip.GzipFile(fileobj=findFileMarker(inFD, *dupMarkers))
+    if findFileMarker(inFD, *dupMarkers) is None:
+        raise skip, "did not find DUP file marker."
+
     null = open("/dev/null", "w", 0)
-    child = subprocess.Popen( ['tar', 'xf', '-', '-C', cwd],
-            bufsize=0,  stdin=subprocess.PIPE, stdout=null, stderr=null)
-    gunzip(gzFD, child.stdin)
-    child.stdin.flush()
-    child.stdin.close()
-    gzFD.flush()
-    gzFD.close()
+    loggedCmd( ['tar', 'xvzf', '-', '-C', cwd],
+            stdin=inFD.fileno(), cwd=cwd, logger=logger)
     null.close()
-    child.wait()
+    inFD.close()
+
 
 decorate(traceLog())
 def zipExtract(sourceFile, cwd, logger=None):
