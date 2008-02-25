@@ -26,8 +26,7 @@ pkgpython_PYTHON = \
 	firmware_addon_dell/extract_bios.py    	\
 	firmware_addon_dell/extract_bios_blacklist.py \
 	firmware_addon_dell/extract_common.py  	\
-	firmware_addon_dell/HelperXml.py  	\
-	firmware_addon_dell/svm.py
+	firmware_addon_dell/HelperXml.py  	
 
 REPLACE_VARS_ON_INSTALL= \
 	$(yumplugindir)/dellsysidplugin.py	\
