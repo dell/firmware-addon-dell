@@ -88,13 +88,13 @@ def BootstrapGenerator(base=None, cb=None, *args, **kargs):
 
     yield package.Device(
             name = ("bmc_firmware(ven_0x1028_dev_0x%04x)" % sysId).lower(),
-            displayname = "System BIOS for %s" % biosHdr.getProductName(),
+            displayname = "Baseboard Management Controller (BMC) for %s" % biosHdr.getProductName(),
             version = biosVer,
             )
 
     yield package.Device(
             name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
-            displayname = "Baseboard Management Controller (BMC) for %s" % biosHdr.getProductName(),
+            displayname = "System BIOS for %s" % biosHdr.getProductName(),
             version = biosVer,
             )
 
