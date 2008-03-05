@@ -34,6 +34,7 @@ BuildRequires:  python-devel, firmware-tools
 %if %(test -e /etc/SuSE-release && echo 1 || echo 0)
 # suse splits out python std library out
 BuildRequires: python-xml
+Requires: python-xml
 %endif
 
 # I know rpmlint complains about this (An ERROR, in fact), but it is a
