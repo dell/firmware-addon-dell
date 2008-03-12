@@ -90,6 +90,8 @@ def inventory_hook(conduit, inventory=None, *args, **kargs):
         version = biosVer,
         compareStrategy = biosHdr.compareVersions,
         )
+
+    base.setSystemId( vendorId = 0x1028, systemId = sysId )
     if inventory.getDevice(p.uniqueInstance) is None:
         inventory.addDevice(p)
 
