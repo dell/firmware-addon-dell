@@ -13,14 +13,14 @@ import tarfile
 import tempfile
 import time
 import xml.dom.minidom
-try:
-    import subprocess
-except ImportError:
-    import compat_subprocess as subprocess
 
 from firmwaretools.trace_decorator import decorate, traceLog, getLog
 import firmwaretools.pycompat as pycompat
 import firmware_addon_dell.HelperXml as HelperXml
+try:
+    import subprocess
+except ImportError:
+    import firmwaretools.compat_subprocess as subprocess
 
 try:
     import firmware_extract as fte

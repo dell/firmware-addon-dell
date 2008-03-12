@@ -21,7 +21,6 @@ nodist_check_SCRIPTS = test/testAll.py
 pkgpython_PYTHON = \
 	firmware_addon_dell/__init__.py	\
 	firmware_addon_dell/biosHdr.py   	\
-	firmware_addon_dell/compat_subprocess.py \
 	firmware_addon_dell/dellbios.py  	\
 	firmware_addon_dell/extract_bios.py    	\
 	firmware_addon_dell/extract_bios_blacklist.py \
