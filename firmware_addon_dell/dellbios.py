@@ -74,15 +74,19 @@ class BiosPackage(package.RepositoryPackage):
         return 1
 
 
-import traceback
+sysId = 0
+try:
+    sysId = biosHdr.getSystemId()
+except Exception, e:
+    raise plugins.DisablePlugin
 
-# standard entry point -- Inventory
-#  -- this is a generator function, but system can only have one system bios,
-#     so, only one yield, no loop
+def config_hook(conduit, inventory=None, *args, **kargs):
+    base = conduit.getBase()
+    base.setSystemId( vendorId = 0x1028, systemId = sysId )
+
 def inventory_hook(conduit, inventory=None, *args, **kargs):
     base = conduit.getBase()
     cb = base.cb
-    sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
     p = package.Device(
         name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
@@ -91,7 +95,6 @@ def inventory_hook(conduit, inventory=None, *args, **kargs):
         compareStrategy = biosHdr.compareVersions,
         )
 
-    base.setSystemId( vendorId = 0x1028, systemId = sysId )
     if inventory.getDevice(p.uniqueInstance) is None:
         inventory.addDevice(p)
 
@@ -109,6 +112,5 @@ mockExpectedOutput_inventory = [("system_bios(ven_0x1028_dev_0x0183)", "a05"), ]
 #==============================================================
 
 # re-use mock data from low-level getSystemId mock function
-mockExpectedOutput_bootstrap = """system_bios(ven_0x1028_dev_0x0183)
-bmc_firmware(ven_0x1028_dev_0x0183)"""
+mockExpectedOutput_bootstrap = """system_bios(ven_0x1028_dev_0x0183)"""
 
