@@ -22,13 +22,8 @@ import biosHdr
 import firmwaretools.package as package
 import firmwaretools.plugins as plugins
 
-plugin_type = (plugins.TYPE_BOOTSTRAP, plugins.TYPE_INVENTORY)
+plugin_type = (plugins.TYPE_INVENTORY,)
 requires_api_version = "2.0"
-
-def config_hook(conduit, *args, **kargs):
-    conduit.getBase().registerBootstrapFunction("bootstrap_dellbios", BootstrapGenerator)
-    conduit.getBase().registerInventoryFunction("inventory_dellbios", InventoryGenerator)
-
 
 rbu_load_error="""Could not load Dell RBU kernel driver (dell_rbu).
 This kernel driver is included in Linux kernel 2.6.14 and later.
@@ -81,37 +76,12 @@ class BiosPackage(package.RepositoryPackage):
 
 import traceback
 
-# standard entry point -- Bootstrap
-def BootstrapGenerator(base=None, cb=None, *args, **kargs):
-    sysId = biosHdr.getSystemId()
-    biosVer = biosHdr.getSystemBiosVer()
-
-    yield package.Device(
-            name = ("bmc_firmware(ven_0x1028_dev_0x%04x)" % sysId).lower(),
-            displayname = "Baseboard Management Controller (BMC) for %s" % biosHdr.getProductName(),
-            version = biosVer,
-            )
-
-    yield package.Device(
-            name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
-            displayname = "System BIOS for %s" % biosHdr.getProductName(),
-            version = biosVer,
-            )
-
-    # output all normal PCI bootstrap packages with system-specific name
-    pymod = "firmwaretools.bootstrap_pci"
-    module = __import__(pymod, globals(),  locals(), [])
-    for i in pymod.split(".")[1:]:
-        module = getattr(module, i)
-    for pkg in module.BootstrapGenerator(base=base, cb=cb, *args, **kargs):
-        pkg.name = "%s/%s" % (pkg.name, "system(ven_0x1028_dev_0x%04x)" % sysId)
-        yield pkg
-
-
 # standard entry point -- Inventory
 #  -- this is a generator function, but system can only have one system bios,
 #     so, only one yield, no loop
-def InventoryGenerator(*args, **kargs):
+def inventory_hook(conduit, inventory=None, *args, **kargs):
+    base = conduit.getBase()
+    cb = base.cb
     sysId = biosHdr.getSystemId()
     biosVer = biosHdr.getSystemBiosVer()
     p = package.Device(
@@ -120,7 +90,8 @@ def InventoryGenerator(*args, **kargs):
         version = biosVer,
         compareStrategy = biosHdr.compareVersions,
         )
-    yield p
+    if inventory.getDevice(p.uniqueInstance) is None:
+        inventory.addDevice(p)
 
 #==============================================================
 # mock classes for unit tests
