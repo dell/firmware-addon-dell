@@ -29,13 +29,6 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 # on, eg. PPC.  Also, we rely on libsmbios, which is only avail on Intel-compat
 ExclusiveArch: x86_64 ia64 %{ix86}
 
-BuildRequires:  python-devel, firmware-tools
-
-%if %(test -e /etc/SuSE-release && echo 1 || echo 0)
-# suse splits out python std library out
-BuildRequires: python-xml
-Requires: python-xml
-%endif
 
 # I know rpmlint complains about this (An ERROR, in fact), but it is a
 # false positive. Auto deps cannot find this one because I actually am running
@@ -43,9 +36,14 @@ Requires: python-xml
 # the -bin package
 Requires: libsmbios-bin 
 Requires: firmware-tools >= 0:2.0.0
-
 Provides: firmware_inventory(system_bios)  = 0:%{version}
-Provides: firmware_inventory(bmc) = 0:%{version}
+BuildRequires:  python-devel, firmware-tools
+
+%if %(test -e /etc/SuSE-release && echo 1 || echo 0)
+# suse splits out python std library out
+BuildRequires: python-xml
+Requires: python-xml
+%endif
 
 %description
 The firmware-addon-dell package provides plugins to firmware-tools which enable
