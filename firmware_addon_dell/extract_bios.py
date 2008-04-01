@@ -26,7 +26,7 @@ except ImportError:
 import firmware_addon_dell as fad
 import extract_common as common
 import biosHdr
-from extract_bios_blacklist import dell_system_id_blacklist
+from extract_bios_blacklist import dell_system_id_blacklist, dell_system_specific_bios_blacklist 
 
 # required by the Firmware-Tools plugin API
 __VERSION__ = firmwaretools.__VERSION__
@@ -546,7 +546,14 @@ def copyHdr(hdr, id, ver, destTop, logger):
         shortname = shortName.getShortname("0x1028", "0x%04x" % id),
     )
 
+    blacklisted = 0
     if id in dell_system_id_blacklist:
+        blacklisted = 1
+
+    if (id, ver.lower()) in dell_specific_bios_blacklist:
+        blacklisted = 1
+
+    if blacklisted:
         common.setIni( packageIni, "package",
             blacklisted="1",
             blacklist_reason="Broken RBU implementation.",
