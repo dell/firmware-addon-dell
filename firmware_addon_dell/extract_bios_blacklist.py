@@ -1,4 +1,14 @@
 # These are Dell System IDs that predate a functional RBU implementation.
+
+# blacklist specific versions
+# (system_id, "bios_version")
+dell_specific_bios_blacklist = [
+    (0x0126, "a11"), # breaks usb keyboard in syslinux
+    (0x01AD, "a11"), # breaks usb keyboard in syslinux
+    (0x01BC, "a11"), # breaks usb keyboard in syslinux
+    ( 0x022E, "a07"), # breaks wireless
+]
+
 dell_system_id_blacklist = [
     0x0092,
     0x0093,
