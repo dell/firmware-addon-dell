@@ -7,6 +7,14 @@
 %define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
 
+%define python_xml_BR %{nil}
+# Some variable definitions so that we can be compatible between SUSE Build service and Fedora build system
+# SUSE: fedora_version  suse_version rhel_version centos_version sles_version
+# Fedora: fedora dist fc8 fc9
+%if 0%{?suse_version} || 0%{?sles_version}
+    %define python_xml_BR python-xml
+%endif
+
 # per fedora python packaging guidelines
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
@@ -37,13 +45,7 @@ ExclusiveArch: x86_64 ia64 %{ix86}
 Requires: libsmbios-bin 
 Requires: firmware-tools >= 0:2.0.0
 Provides: firmware_inventory(system_bios)  = 0:%{version}
-BuildRequires:  python-devel, firmware-tools
-
-%if %(test -e /etc/SuSE-release && echo 1 || echo 0)
-# suse splits out python std library out
-BuildRequires: python-xml
-Requires: python-xml
-%endif
+BuildRequires:  python-devel, firmware-tools, %{python_xml_BR}
 
 %description
 The firmware-addon-dell package provides plugins to firmware-tools which enable
