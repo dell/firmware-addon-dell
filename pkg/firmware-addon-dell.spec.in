@@ -41,7 +41,7 @@ ExclusiveArch: x86_64 ia64 %{ix86}
 # false positive. Auto deps cannot find this one because I actually am running
 # binaries, not linking agains libs, as indicated by the fact that I require 
 # the -bin package
-Requires: libsmbios-bin 
+Requires: smbios-utils
 Requires: firmware-tools >= 0:2.0.0
 Provides: firmware_inventory(system_bios)  = 0:%{version}
 BuildRequires:  python-devel, firmware-tools, %{python_xml_BR}
