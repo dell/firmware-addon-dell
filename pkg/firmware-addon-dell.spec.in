@@ -36,12 +36,13 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 # on, eg. PPC.  Also, we rely on libsmbios, which is only avail on Intel-compat
 ExclusiveArch: x86_64 ia64 %{ix86}
 
+# SUSE build has anal directory ownership check. RPM which owns all dirs *must*
+# be installed at buildtime. This means we have to BuildRequire them, even if
+# we dont really need them at build time.
+%if 0%{?suse_version}
+BuildRequires: firmware-tools
+%endif
 
-# I know rpmlint complains about this (An ERROR, in fact), but it is a
-# false positive. Auto deps cannot find this one because I actually am running
-# binaries, not linking agains libs, as indicated by the fact that I require 
-# the -bin package
-Requires: smbios-utils
 Requires: firmware-tools >= 0:2.0.0
 Provides: firmware_inventory(system_bios)  = 0:%{version}
 BuildRequires:  python-devel, firmware-tools, %{python_xml_BR}
@@ -59,6 +60,12 @@ applicable to most Dell systems.
 # this line lets us build an RPM directly from a git tarball
 [ -e ./configure ] || ./autogen.sh
 
+# fix problems when buildsystem time is out of sync. ./configure will
+# fail if newly created files are older than the packaged files.
+# this should normally be a no-op on proper buildsystems.
+touch configure
+find . -type f -newer configure -print0 | xargs -r0 touch
+
 %configure
 make -e %{?_smp_mflags} 
 
@@ -66,7 +73,11 @@ make -e %{?_smp_mflags}
 make -e %{?_smp_mflags} check
 
 %install
+# Fedora Packaging guidelines
 rm -rf $RPM_BUILD_ROOT
+# SUSE Packaging rpmlint
+mkdir $RPM_BUILD_ROOT
+
 make install DESTDIR=%{buildroot} INSTALL="%{__install} -p"
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios
 
