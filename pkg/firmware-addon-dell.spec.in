@@ -40,9 +40,10 @@ ExclusiveArch: x86_64 ia64 %{ix86}
 # be installed at buildtime. This means we have to BuildRequire them, even if
 # we dont really need them at build time.
 %if 0%{?suse_version}
-BuildRequires: firmware-tools
+BuildRequires: firmware-tools yum
 %endif
 
+Requires: smbios-utils
 Requires: firmware-tools >= 0:2.0.0
 Provides: firmware_inventory(system_bios)  = 0:%{version}
 BuildRequires:  python-devel, firmware-tools, %{python_xml_BR}
