@@ -2,7 +2,7 @@
 
 # blacklist specific versions
 # (system_id, "bios_version")
-dell_specific_bios_blacklist = [
+dell_system_specific_bios_blacklist = [
     (0x0126, "a11"), # breaks usb keyboard in syslinux
     (0x01AD, "a11"), # breaks usb keyboard in syslinux
     (0x01BC, "a11"), # breaks usb keyboard in syslinux
