@@ -550,7 +550,7 @@ def copyHdr(hdr, id, ver, destTop, logger):
     if id in dell_system_id_blacklist:
         blacklisted = 1
 
-    if (id, ver.lower()) in dell_specific_bios_blacklist:
+    if (id, ver.lower()) in dell_system_specific_bios_blacklist:
         blacklisted = 1
 
     if blacklisted:
