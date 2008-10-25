@@ -40,4 +40,7 @@ dell_system_id_blacklist = [
     0x0145,
     0x0147,
     0x014B,
+    0x0126, # Optiplex GX620 - sometimes bricks. :(
+    0x01AD, # Optiplex GX620 - sometimes bricks. :(
+    0x01BC, # Optiplex GX620 - sometimes bricks. :(
     ]
