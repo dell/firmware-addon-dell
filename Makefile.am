@@ -2,11 +2,6 @@
 
 include Makefile-std
 
-yumplugindir = $(exec_prefix)/lib/yum-plugins
-dist_yumplugin_PYTHON = yum-plugin/dellsysidplugin.py
-yumconfdir = $(sysconfdir)/yum/pluginconf.d/
-dist_yumconf_DATA = yum-plugin/dellsysidplugin.conf
-
 pkgdatadir = $(datadir)/firmware-tools/
 nodist_pkgdata_DATA = doc/system_id2name.ini doc/bios.spec.in doc/dell-std-license.txt
 

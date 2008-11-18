@@ -92,9 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING-GPL COPYING-OSL
 %{python_sitelib}/*
 %config(noreplace) %{_sysconfdir}/firmware/firmware.d/*.conf
-%config(noreplace) %{_sysconfdir}/yum/pluginconf.d/dellsysidplugin.conf
 %{_datadir}/firmware/dell
-%{_exec_prefix}/lib/yum-plugins/*
 %{_datadir}/firmware-tools/*
 
 

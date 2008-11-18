@@ -4,12 +4,12 @@
 
 ####################################
 # change version here.
-AC_INIT([firmware-addon-dell],[2.1.2])
+AC_INIT([firmware-addon-dell],[2.2.0])
 
 temp_RELEASE_NAME=firmware-addon-dell
 temp_RELEASE_MAJOR=2
-temp_RELEASE_MINOR=1
-temp_RELEASE_SUBLEVEL=2
+temp_RELEASE_MINOR=2
+temp_RELEASE_SUBLEVEL=0
 temp_RELEASE_EXTRALEVEL=
 ####################################
 
