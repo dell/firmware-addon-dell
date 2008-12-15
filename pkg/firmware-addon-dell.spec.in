@@ -4,7 +4,6 @@
 %define micro @RELEASE_MICRO@
 %define extra @RELEASE_RPM_EXTRA@
 %define rpm_release 1
-%define release_name firmware-addon-dell
 %define release_version %{major}.%{minor}.%{micro}%{extra}
 
 # required by suse build system
@@ -28,7 +27,7 @@
 # no debuginfo package, as there are no compiled binaries.
 %define debug_package %{nil}
 
-Name:           %{release_name}
+Name:           firmware-addon-dell
 Version:        %{release_version}
 Release:        %{rpm_release}%{?dist}
 Summary:        A firmware-tools plugin to handle BIOS/Firmware for Dell systems
