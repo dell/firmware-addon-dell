@@ -248,7 +248,7 @@ def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
 
-    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir, "Package")):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
@@ -280,7 +280,7 @@ def biosFromLinuxDup3(statusObj, outputTopdir, logger, *args, **kargs):
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
 
-    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir, "Package")):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
@@ -316,7 +316,7 @@ def genericBiosDup(statusObj, outputTopdir, logger, *args, **kargs):
         deps[sysId] = reqver
 
     gotOne=False
-    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir, "Package")):
         gotOne=True
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         if os.path.exists(os.path.join(dest, "package.xml")):
@@ -383,7 +383,7 @@ def biosFromWindowsExe(statusObj, outputTopdir, logger, *args, **kargs):
     except OSError, e:
         raise common.skip, "wine not installed"
 
-    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir):
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir, "Package")):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
