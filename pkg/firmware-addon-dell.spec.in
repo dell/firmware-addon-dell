@@ -1,11 +1,11 @@
 # vim:tw=0:ts=4:sw=4:et
 %define major @RELEASE_MAJOR@
 %define minor @RELEASE_MINOR@
-%define sub @RELEASE_MICRO@
+%define micro @RELEASE_MICRO@
 %define extra @RELEASE_RPM_EXTRA@
 %define rpm_release 1
 %define release_name firmware-addon-dell
-%define release_version %{major}.%{minor}.%{sub}%{extra}
+%define release_version %{major}.%{minor}.%{micro}%{extra}
 
 # required by suse build system
 # norootforbuild
@@ -29,13 +29,13 @@
 %define debug_package %{nil}
 
 Name:           %{release_name}
-Version:        %{release_version} 
+Version:        %{release_version}
 Release:        %{rpm_release}%{?dist}
 Summary:        A firmware-tools plugin to handle BIOS/Firmware for Dell systems
 
 Group:          Applications/System
 License:        GPLv2+ or OSL 2.1
-URL:            http://linux.dell.com/libsmbios/download/ 
+URL:            http://linux.dell.com/libsmbios/download/
 Source0:        http://linux.dell.com/libsmbios/download/%{name}/%{name}-%{version}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -68,18 +68,19 @@ applicable to most Dell systems.
 # this line lets us build an RPM directly from a git tarball
 [ -e ./configure ] || ./autogen.sh
 
-# fix problems when buildsystem time is out of sync. ./configure will
-# fail if newly created files are older than the packaged files.
-# this should normally be a no-op on proper buildsystems.
-touch configure
-find . -type f -newer configure -print0 | xargs -r0 touch
+# only applicable on obs
+# # fix problems when buildsystem time is out of sync. ./configure will
+# # fail if newly created files are older than the packaged files.
+# # this should normally be a no-op on proper buildsystems.
+# touch configure
+# find . -type f -newer configure -print0 | xargs -r0 touch
 
 %configure RELEASE_MAJOR=%{major} RELEASE_MINOR=%{minor} RELEASE_MICRO=%{micro} RELEASE_EXTRA=%{extra}
-make -e %{?_smp_mflags} 
+make %{?_smp_mflags}
 
 %check
 %if 0%{?run_unit_tests}
-make -e %{?_smp_mflags} check
+make %{?_smp_mflags} check
 %endif
 
 %install
@@ -121,7 +122,7 @@ rm -rf $RPM_BUILD_ROOT
 
 * Fri Apr 6 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.10-1
 - Couple of changes so that the dell sysid plugin work on yum 2.4.3
-  prior versions didnt crash, but didnt properly substitute mirrolist 
+  prior versions didnt crash, but didnt properly substitute mirrolist
   because the name of mirrolist var is different in 2.4.3.
 - Per discussion on mailing list, convert to arch-specific pkg
 - package bin/up2date_repo_autoconf only for RHEL{3,4} releases
@@ -152,7 +153,7 @@ rm -rf $RPM_BUILD_ROOT
 - Add ExcludeArch to fix problem where f-a-d was being added to ppc repo
 
 * Thu Mar 15 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.2-1
-- Trivial changes to add specific {_datadir}/firmware/dell 
+- Trivial changes to add specific {_datadir}/firmware/dell
 
 * Thu Mar 15 2007 Michael E Brown <michael_e_brown at dell.com> - 1.2.1-1
 - Trivial changes to make rpmlint happier
