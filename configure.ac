@@ -6,11 +6,10 @@
 # change version here.
 AC_INIT([firmware-addon-dell],[2.2.0])
 
-temp_RELEASE_NAME=firmware-addon-dell
-temp_RELEASE_MAJOR=2
-temp_RELEASE_MINOR=2
-temp_RELEASE_SUBLEVEL=0
-temp_RELEASE_EXTRALEVEL=
+test -n "$RELEASE_MAJOR"      || RELEASE_MAJOR=2
+test -n "$RELEASE_MINOR"      || RELEASE_MINOR=2
+test -n "$RELEASE_MICRO"      || RELEASE_MICRO=1
+test -n "$RELEASE_EXTRA"      || RELEASE_EXTRA=
 ####################################
 
 AC_PREREQ(2.61)
@@ -30,51 +29,32 @@ AM_PATH_PYTHON
 
 # Checks for library functions.
 
-# update 'real' variables from the temp variable names.
-# do this at the end of the file so that they A) are not overwitten by other
-# autoconf stuff, and B) so that user can override on cmdline
-for i in RELEASE_NAME RELEASE_MAJOR RELEASE_MINOR RELEASE_SUBLEVEL RELEASE_EXTRALEVEL
-do
-    varname=temp_$i
-    if test -z "${!i}"; then
-        eval $i=${!varname}; export $i
-    fi
-done
-
-if test -z "$RELEASE_RPM_EXTRALEVEL"; then
-    if test -z "$RELEASE_EXTRALEVEL"; then
-        RELEASE_RPM_EXTRALEVEL=%{nil}
+if test -z "$RELEASE_RPM_EXTRA"; then
+    if test -z "$RELEASE_EXTRA"; then
+        RELEASE_RPM_EXTRA=%{nil}
     else
-        RELEASE_RPM_EXTRALEVEL=$RELEASE_EXTRALEVEL
+        RELEASE_RPM_EXTRA=$RELEASE_EXTRA
     fi
 fi
 
-PACKAGE=$RELEASE_NAME
-PACKAGE_VERSION=[`echo ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${RELEASE_EXTRALEVEL}`]
-PACKAGE_STRING=[`echo ${RELEASE_NAME} ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${RELEASE_EXTRALEVEL}`]
-VERSION=$PACKAGE_VERSION
-
-cat confdefs.h |
-    grep -v 'define PACKAGE_VERSION ' |
-    grep -v 'define PACKAGE_STRING '  > confdefs.new
-mv confdefs.new confdefs.h
-cat >>confdefs.h <<_ACEOF 
-#define PACKAGE_VERSION "$PACKAGE_VERSION"
-#define PACKAGE_STRING "$PACKAGE_STRING"
-_ACEOF
-
-AC_SUBST([RELEASE_NAME RELEASE_MAJOR RELEASE_MINOR RELEASE_SUBLEVEL RELEASE_EXTRALEVEL RELEASE_RPM_EXTRALEVEL])
-
-# this is used by the autobuilder hook to determine the version we built
-echo "PACKAGE_NAME='$PACKAGE_NAME'" > version
-echo "PACKAGE_VERSION='$PACKAGE_VERSION'" >> version
-echo "PACKAGE_STRING='$PACKAGE_STRING'" >> version
+AC_SUBST([RELEASE_MAJOR])
+AC_SUBST([RELEASE_MINOR])
+AC_SUBST([RELEASE_MICRO])
+AC_SUBST([RELEASE_EXTRA])
+AC_SUBST([RELEASE_RPM_EXTRA])
 
 # oddity: package name cannot contain '-', so we have to fix it
 pkgpythondir=\${pythondir}/firmware_addon_dell
 pkgpyexecdir=\${pyexecdir}/firmware_addon_dell
 
+VERSION=[`echo ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_MICRO}${RELEASE_EXTRA}`]
+PACKAGE_VERSION=$VERSION
+PACKAGE_STRING=[`echo ${RELEASE_NAME}-${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_MICRO}${RELEASE_EXTRA}`]
+sed -i "s|(^#define PACKAGE_VERSION).*|\$1 \"$PACKAGE_VERSION\"|" confdefs.h
+sed -i "s|(^#define PACKAGE_STRING).*|\$1 \"$PACKAGE_STRING\"|" confdefs.h
+
 # generate files and exit
-AC_CONFIG_FILES([ Makefile pkg/${PACKAGE_NAME}.spec ])
+AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([pkg/${PACKAGE_NAME}.spec])
 AC_OUTPUT
 

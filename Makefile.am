@@ -14,7 +14,7 @@ TESTS = test/testAll.py
 nodist_check_SCRIPTS = test/testAll.py
 
 pkgpython_PYTHON = \
-	firmware_addon_dell/__init__.py	\
+	firmware_addon_dell/generated/__init__.py	\
 	firmware_addon_dell/biosHdr.py   	\
 	firmware_addon_dell/dellbios.py  	\
 	firmware_addon_dell/extract_bios.py    	\
@@ -22,7 +22,15 @@ pkgpython_PYTHON = \
 	firmware_addon_dell/extract_common.py  	\
 	firmware_addon_dell/HelperXml.py
 
-REPLACE_VARS_ON_INSTALL= \
-	$(yumplugindir)/dellsysidplugin.py	\
-	$(pkgpythondir)/__init__.py
-
+__VERSION__=$(VERSION)
+PKGLIBEXECDIR=$(pkglibexecdir)
+REPLACE_VARS+= __VERSION__ PKGLIBEXECDIR
+EXTRA_DIST += firmware_addon_dell/__init__.py
+DISTCLEANFILES +=   firmware_addon_dell/generated/__init__.py
+firmware_addon_dell/generated/__init__.py: firmware_addon_dell/__init__.py configure Makefile config.status
+	mkdir -p $$(dirname $@) ||:
+	cp $< $@
+	for var in $(REPLACE_VARS)	;\
+	do	\
+		perl -p -i -e "s|^$$var\s*=.*|$$var=\"$${!var}\"|"  $@;\
+	done

@@ -1,11 +1,18 @@
 # vim:tw=0:ts=4:sw=4:et
 %define major @RELEASE_MAJOR@
 %define minor @RELEASE_MINOR@
-%define sub @RELEASE_SUBLEVEL@
-%define extralevel @RELEASE_RPM_EXTRALEVEL@
+%define sub @RELEASE_MICRO@
+%define extra @RELEASE_RPM_EXTRA@
 %define rpm_release 1
 %define release_name firmware-addon-dell
-%define release_version %{major}.%{minor}.%{sub}%{extralevel}
+%define release_version %{major}.%{minor}.%{sub}%{extra}
+
+# required by suse build system
+# norootforbuild
+
+%define run_unit_tests 1
+%{?_without_unit_tests: %define run_unit_tests 0}
+%{?_with_unit_tests:    %define run_unit_tests 1}
 
 %define python_xml_BR %{nil}
 # Some variable definitions so that we can be compatible between SUSE Build service and Fedora build system
@@ -67,11 +74,13 @@ applicable to most Dell systems.
 touch configure
 find . -type f -newer configure -print0 | xargs -r0 touch
 
-%configure
+%configure RELEASE_MAJOR=%{major} RELEASE_MINOR=%{minor} RELEASE_MICRO=%{micro} RELEASE_EXTRA=%{extra}
 make -e %{?_smp_mflags} 
 
 %check
+%if 0%{?run_unit_tests}
 make -e %{?_smp_mflags} check
+%endif
 
 %install
 # Fedora Packaging guidelines
