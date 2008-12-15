@@ -8,10 +8,9 @@ nodist_pkgdata_DATA = doc/system_id2name.ini doc/bios.spec.in doc/dell-std-licen
 pkgconfdir = $(sysconfdir)/firmware/firmware.d/
 nodist_pkgconf_DATA = doc/firmware-addon-dell.conf
 
+export top_srcdir top_builddir
 EXTRA_DIST += doc test COPYING-GPL COPYING-OSL
-
 TESTS = test/testAll.py
-nodist_check_SCRIPTS = test/testAll.py
 
 pkgpython_PYTHON = \
 	firmware_addon_dell/generated/__init__.py	\
