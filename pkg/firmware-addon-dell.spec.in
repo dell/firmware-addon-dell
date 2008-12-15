@@ -3,7 +3,6 @@
 %define minor @RELEASE_MINOR@
 %define micro @RELEASE_MICRO@
 %define extra @RELEASE_RPM_EXTRA@
-%define rpm_release 1
 %define release_version %{major}.%{minor}.%{micro}%{extra}
 
 # required by suse build system
@@ -29,7 +28,7 @@
 
 Name:           firmware-addon-dell
 Version:        %{release_version}
-Release:        %{rpm_release}%{?dist}
+Release:        1%{?dist}
 Summary:        A firmware-tools plugin to handle BIOS/Firmware for Dell systems
 
 Group:          Applications/System
@@ -46,13 +45,13 @@ ExclusiveArch: x86_64 ia64 %{ix86}
 # be installed at buildtime. This means we have to BuildRequire them, even if
 # we dont really need them at build time.
 %if 0%{?suse_version}
-BuildRequires: firmware-tools yum
+BuildRequires: firmware-tools
 %endif
 
 Requires: smbios-utils
 Requires: firmware-tools >= 0:2.0.0
 Provides: firmware_inventory(system_bios)  = 0:%{version}
-BuildRequires:  python-devel, firmware-tools, %{python_xml_BR}
+BuildRequires:  python-devel firmware-tools %{python_xml_BR}
 
 %description
 The firmware-addon-dell package provides plugins to firmware-tools which enable
