@@ -85,7 +85,7 @@ make %{?_smp_mflags} check
 # Fedora Packaging guidelines
 rm -rf $RPM_BUILD_ROOT
 # SUSE Packaging rpmlint
-mkdir $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT
 
 make install DESTDIR=%{buildroot} INSTALL="%{__install} -p"
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/firmware/dell/bios
