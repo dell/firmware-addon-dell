@@ -41,17 +41,12 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 # on, eg. PPC.  Also, we rely on libsmbios, which is only avail on Intel-compat
 ExclusiveArch: x86_64 ia64 %{ix86}
 
-# SUSE build has anal directory ownership check. RPM which owns all dirs *must*
-# be installed at buildtime. This means we have to BuildRequire them, even if
-# we dont really need them at build time.
-%if 0%{?suse_version}
-BuildRequires: firmware-tools
-%endif
+BuildRequires: firmware-tools > 0:2.0
+BuildRequires:  python-smbios python-devel %{python_xml_BR}
 
 Requires: smbios-utils python-smbios
 Requires: firmware-tools >= 0:2.0.0
 Provides: firmware_inventory(system_bios)  = 0:%{version}
-BuildRequires:  python-smbios python-devel firmware-tools %{python_xml_BR}
 
 %description
 The firmware-addon-dell package provides plugins to firmware-tools which enable
