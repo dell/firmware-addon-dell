@@ -4,11 +4,11 @@
 
 ####################################
 # change version here.
-AC_INIT([firmware-addon-dell],[2.2.0])
+AC_INIT([firmware-addon-dell],[2.2.2])
 
 test -n "$RELEASE_MAJOR"      || RELEASE_MAJOR=2
 test -n "$RELEASE_MINOR"      || RELEASE_MINOR=2
-test -n "$RELEASE_MICRO"      || RELEASE_MICRO=1
+test -n "$RELEASE_MICRO"      || RELEASE_MICRO=2
 test -n "$RELEASE_EXTRA"      || RELEASE_EXTRA=
 ####################################
 
