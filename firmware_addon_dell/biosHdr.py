@@ -45,4 +45,5 @@ def getBiosHdrVersion(file):
 
 def getHdrSystemIds(file):
     f = rbu_hdr.HdrFile(file) 
-    return f.systemIds()
+    return ( id for id, hwrev in f.systemIds() )
+
