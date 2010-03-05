@@ -2,20 +2,20 @@
 # vim:tw=0:et:ts=4:sw=4
 # Process this file with autoconf to produce a configure script.
 
+m4_define([release_major_version], [2])
+m4_define([release_minor_version], [2])
+m4_define([release_micro_version], [2])
+# if you define any "extra" version info, include a leading dot (".")
+m4_define([release_extra_version], [])
+
 ####################################
 # change version here.
-AC_INIT([firmware-addon-dell],[2.2.2])
-
-test -n "$RELEASE_MAJOR"      || RELEASE_MAJOR=2
-test -n "$RELEASE_MINOR"      || RELEASE_MINOR=2
-test -n "$RELEASE_MICRO"      || RELEASE_MICRO=2
-test -n "$RELEASE_EXTRA"      || RELEASE_EXTRA=
-####################################
+AC_INIT([firmware-addon-dell],
+          [release_major_version().release_minor_version().release_micro_version()release_extra_version()])
 
 AC_PREREQ(2.61)
 AC_CONFIG_AUX_DIR([pkg])
 AM_INIT_AUTOMAKE(1.9 tar-ustar no-define)
-AM_MAINTAINER_MODE
 
 # Checks for programs.
 AC_PROG_INSTALL
@@ -29,19 +29,16 @@ AM_PATH_PYTHON
 
 # Checks for library functions.
 
-if test -z "$RELEASE_RPM_EXTRA"; then
-    if test -z "$RELEASE_EXTRA"; then
-        RELEASE_RPM_EXTRA=%{nil}
-    else
-        RELEASE_RPM_EXTRA=$RELEASE_EXTRA
-    fi
-fi
+# variables
+AC_SUBST([RELEASE_MAJOR], [release_major_version()])
+AC_SUBST([RELEASE_MINOR], [release_minor_version()])
+AC_SUBST([RELEASE_MICRO], [release_micro_version()])
+AC_SUBST([RELEASE_EXTRA], [release_extra_version()])
 
-AC_SUBST([RELEASE_MAJOR])
-AC_SUBST([RELEASE_MINOR])
-AC_SUBST([RELEASE_MICRO])
-AC_SUBST([RELEASE_EXTRA])
-AC_SUBST([RELEASE_RPM_EXTRA])
+AC_SUBST([RELEASE_RPM_EXTRA], [$RELEASE_EXTRA])
+if test -z "$RELEASE_EXTRA"; then
+    RELEASE_RPM_EXTRA=%{nil}
+fi
 
 # oddity: package name cannot contain '-', so we have to fix it
 pkgpythondir=\${pythondir}/firmware_addon_dell
