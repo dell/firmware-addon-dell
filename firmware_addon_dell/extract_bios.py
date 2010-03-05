@@ -189,7 +189,7 @@ def setupWine():
         "HOME":os.environ["HOME"],
         "WINEPREFIX": wineprefix,
         }
-    common.loggedCmd(["wineprefixcreate", "-w", "--prefix", wineprefix], cwd=wineprefix, env=env, logger=getLog())
+    common.loggedCmd(["wineprefixcreate", "-w", "--prefix", wineprefix], cwd=wineprefix, env=env, logger=getLog(), raiseExc=False)
     atexit.register(shutil.rmtree, wineprefix)
     getLog(prefix="verbose.").info("Wine pre-setup finished.")
 
