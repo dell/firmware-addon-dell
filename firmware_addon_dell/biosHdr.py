@@ -29,21 +29,30 @@ def getProductName():
 
 def getServiceTag():
     return sysinfo.get_service_tag()
-            
+
 def getSystemBiosVer():
     return sysinfo.get_bios_version()
 
 # no good way to unit test this for now...
 def isHdrFileNewer(file):
-    ver = sysinfo.get_bios_version()
-    hdrfile = rbu_hdr.HdrFile(file) 
-    return rbu_update.compareBiosVersions(hdrfile.biosVersion(), ver) > 0
+    try:
+        ver = sysinfo.get_bios_version()
+        hdrfile = rbu_hdr.HdrFile(file)
+        return rbu_update.compareBiosVersions(hdrfile.biosVersion(), ver) > 0
+    except rbu_hdr.InvalidRbuHdr, e:
+        raise InvalidHdr(str(e))
 
 def getBiosHdrVersion(file):
-    f = rbu_hdr.HdrFile(file) 
-    return f.biosVersion()
+    try:
+        f = rbu_hdr.HdrFile(file)
+        return f.biosVersion()
+    except rbu_hdr.InvalidRbuHdr, e:
+        raise InvalidHdr(str(e))
 
 def getHdrSystemIds(file):
-    f = rbu_hdr.HdrFile(file) 
-    return ( id for id, hwrev in f.systemIds() )
+    try:
+        f = rbu_hdr.HdrFile(file)
+        return ( id for id, hwrev in f.systemIds() )
+    except rbu_hdr.InvalidRbuHdr, e:
+        raise InvalidHdr(str(e))
 
