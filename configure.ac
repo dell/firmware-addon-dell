@@ -15,7 +15,7 @@ AC_INIT([firmware-addon-dell],
 
 AC_PREREQ(2.61)
 AC_CONFIG_AUX_DIR([pkg])
-AM_INIT_AUTOMAKE(1.9 tar-ustar no-define)
+AM_INIT_AUTOMAKE([1.10 subdir-objects tar-ustar dist-bzip2 dist-lzma no-define])
 
 # Checks for programs.
 AC_PROG_INSTALL
