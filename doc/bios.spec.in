@@ -49,7 +49,7 @@ would be a good place to start.
 If this package is useful to you, feedback is appreciated.
 
 %prep
-%setup -n %{safe_name}_version_%{version}
+%setup -n #tar_dir#
 
 %build
 
