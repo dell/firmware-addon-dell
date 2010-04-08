@@ -44,12 +44,6 @@ fi
 pkgpythondir=\${pythondir}/firmware_addon_dell
 pkgpyexecdir=\${pyexecdir}/firmware_addon_dell
 
-VERSION=[`echo ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_MICRO}${RELEASE_EXTRA}`]
-PACKAGE_VERSION=$VERSION
-PACKAGE_STRING=[`echo ${RELEASE_NAME}-${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_MICRO}${RELEASE_EXTRA}`]
-sed -i "s|(^#define PACKAGE_VERSION).*|\$1 \"$PACKAGE_VERSION\"|" confdefs.h
-sed -i "s|(^#define PACKAGE_STRING).*|\$1 \"$PACKAGE_STRING\"|" confdefs.h
-
 # generate files and exit
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pkg/${PACKAGE_NAME}.spec])
