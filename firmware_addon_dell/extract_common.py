@@ -114,7 +114,8 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
                     if line == '': continue
                     logger.debug(chomp(line))
                 for h in logger.handlers:
-                    h.flush()
+                    if h is not None:
+                        h.flush()
             if returnOutput:
                 output += input
     return output
