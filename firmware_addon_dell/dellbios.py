@@ -78,25 +78,27 @@ sysId = 0
 try:
     sysId = biosHdr.getSystemId()
 except Exception, e:
-    raise plugins.DisablePlugin
+    pass
 
 def config_hook(conduit, inventory=None, *args, **kargs):
-    base = conduit.getBase()
-    base.setSystemId( vendorId = 0x1028, systemId = sysId )
+    if sysId:
+        base = conduit.getBase()
+        base.setSystemId( vendorId = 0x1028, systemId = sysId )
 
 def inventory_hook(conduit, inventory=None, *args, **kargs):
-    base = conduit.getBase()
-    cb = base.cb
-    biosVer = biosHdr.getSystemBiosVer()
-    p = package.Device(
-        name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
-        displayname = "System BIOS for %s" % biosHdr.getProductName(),
-        version = biosVer,
-        compareStrategy = biosHdr.compareVersions,
-        )
+    if sysId:
+        base = conduit.getBase()
+        cb = base.cb
+        biosVer = biosHdr.getSystemBiosVer()
+        p = package.Device(
+            name = ("system_bios(ven_0x1028_dev_0x%04x)" % sysId).lower(),
+            displayname = "System BIOS for %s" % biosHdr.getProductName(),
+            version = biosVer,
+            compareStrategy = biosHdr.compareVersions,
+            )
 
-    if inventory.getDevice(p.uniqueInstance) is None:
-        inventory.addDevice(p)
+        if inventory.getDevice(p.uniqueInstance) is None:
+            inventory.addDevice(p)
 
 #==============================================================
 # mock classes for unit tests
