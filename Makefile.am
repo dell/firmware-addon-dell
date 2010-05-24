@@ -29,7 +29,4 @@ DISTCLEANFILES +=   firmware_addon_dell/generated/__init__.py
 firmware_addon_dell/generated/__init__.py: firmware_addon_dell/__init__.py configure Makefile config.status
 	mkdir -p $$(dirname $@) ||:
 	cp $< $@
-	for var in $(REPLACE_VARS)	;\
-	do	\
-		perl -p -i -e "s|^$$var\s*=.*|$$var=\"$${!var}\"|"  $@;\
-	done
+	$(call replace_vars_in_file,$@)
