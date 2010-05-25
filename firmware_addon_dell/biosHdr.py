@@ -52,7 +52,7 @@ def getBiosHdrVersion(file):
 def getHdrSystemIds(file):
     try:
         f = rbu_hdr.HdrFile(file)
-        return ( id for id, hwrev in f.systemIds() )
+        return [ id for id, hwrev in f.systemIds() ]
     except rbu_hdr.InvalidRbuHdr, e:
         raise InvalidHdr(str(e))
 
