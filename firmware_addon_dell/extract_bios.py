@@ -139,7 +139,7 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     # register these in reverse priority order because we are using registerFront feature
     extract_cmd.registerPlugin(alreadyHdr, __VERSION__, registerFront=True)
 
-    if os.path.exists("/usr/lib/libfakeroot/libfakeroot.so"):
+    if os.path.exists("/usr/lib/libfakeroot/libfakeroot-0.so"):
         extract_cmd.registerPlugin(biosFromLinuxDup3, __VERSION__, registerFront=True)
         extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__, registerFront=True)
     else:
@@ -247,7 +247,7 @@ def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
         common.loggedCmd(
             [flashbin, "--WriteHDRFile"],
             cwd=statusObj.tmpdir, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so"}
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot-0.so"}
             )
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
@@ -279,7 +279,7 @@ def biosFromLinuxDup3(statusObj, outputTopdir, logger, *args, **kargs):
         common.loggedCmd(
             [statusObj.tmpfile, "--WriteHDRFile"],
             cwd=statusObj.tmpdir, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so"}
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot-0.so"}
             )
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
