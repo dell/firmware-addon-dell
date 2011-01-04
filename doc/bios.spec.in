@@ -1,4 +1,10 @@
 
+# ensure old distro rpm can read our files
+%global _source_filedigest_algorithm  1
+%global _binary_filedigest_algorithm 1
+%global _source_payload	w9.gzdio
+%global _binary_payload	w9.gzdio
+
 %define safe_name #safe_name#
 %define name      #name#
 %define vendor_id #vendor_id#
