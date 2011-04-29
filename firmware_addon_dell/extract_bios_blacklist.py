@@ -43,4 +43,6 @@ dell_system_id_blacklist = [
     0x0126, # Optiplex GX620 - sometimes bricks. :(
     0x01AD, # Optiplex GX620 - sometimes bricks. :(
     0x01BC, # Optiplex GX620 - sometimes bricks. :(
+    0x02a5, # R210 BIOS that incorrectly sets machine ID to T110 0x2a6
+    0x02a6, # T110 BIOS, probably doesnt need to be blacklisted, but just in case
     ]
