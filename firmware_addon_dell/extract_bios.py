@@ -139,13 +139,14 @@ def extract_doCheck_hook(conduit, *args, **kargs):
     # register these in reverse priority order because we are using registerFront feature
     extract_cmd.registerPlugin(alreadyHdr, __VERSION__, registerFront=True)
 
-    if os.path.exists("/usr/lib/libfakeroot/libfakeroot.so"):
+    if os.path.exists("/usr/lib/libfakeroot/libfakeroot-0.so"):
         extract_cmd.registerPlugin(biosFromLinuxDup3, __VERSION__, registerFront=True)
         extract_cmd.registerPlugin(biosFromLinuxDup2, __VERSION__, registerFront=True)
     else:
         moduleLog.info("Disabled biosFromLinuxDup2 plugin due to missing fakeroot.i386 package.")
         moduleLog.info("Disabled biosFromLinuxDup3 plugin due to missing fakeroot.i386 package.")
 
+    extract_cmd.registerPlugin(biosFromLinuxDup4, __VERSION__, registerFront=True)
     extract_cmd.registerPlugin(biosFromLinuxDup, __VERSION__, registerFront=True)
     extract_cmd.registerPlugin(biosFromWindowsDup, __VERSION__, registerFront=True)
 
@@ -189,7 +190,11 @@ def setupWine():
         "HOME":os.environ["HOME"],
         "WINEPREFIX": wineprefix,
         }
-    common.loggedCmd(["wineprefixcreate", "-w", "--prefix", wineprefix], cwd=wineprefix, env=env, logger=getLog(), raiseExc=False)
+    if os.path.exists('/usr/bin/wineboot'):
+        cmd = ["wineboot", "-u"]
+    elif os.path.exists('/usr/bin/wineprefixcreate'):
+        cmd = ["wineprefixcreate", "-w", "--prefix", wineprefix]
+    common.loggedCmd(cmd, cwd=wineprefix, env=env, logger=getLog(), raiseExc=False)
     atexit.register(shutil.rmtree, wineprefix)
     getLog(prefix="verbose.").info("Wine pre-setup finished.")
 
@@ -243,7 +248,7 @@ def biosFromLinuxDup2(statusObj, outputTopdir, logger, *args, **kargs):
         common.loggedCmd(
             [flashbin, "--WriteHDRFile"],
             cwd=statusObj.tmpdir, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so"}
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot-0.so"}
             )
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
@@ -275,12 +280,36 @@ def biosFromLinuxDup3(statusObj, outputTopdir, logger, *args, **kargs):
         common.loggedCmd(
             [statusObj.tmpfile, "--WriteHDRFile"],
             cwd=statusObj.tmpdir, logger=logger,
-            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot.so"}
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"], "LD_PRELOAD": "/usr/lib/libfakeroot/libfakeroot-0.so"}
             )
     except (OSError, common.CommandException), e:
         raise common.skip, str(e)
 
     for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir, "Package")):
+        dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
+        for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
+            shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )
+
+    return True
+
+# DUPS for 11G servers self-extract into a directory with --extract
+decorate(traceLog())
+def biosFromLinuxDup4(statusObj, outputTopdir, logger, *args, **kargs):
+    common.assertFileExt( statusObj.file, '.bin')
+    common.copyToTmp(statusObj)
+    oldmode = stat.S_IMODE(os.stat(statusObj.file)[stat.ST_MODE])
+    os.chmod(statusObj.file, oldmode | stat.S_IRWXU)
+
+    try:
+        common.loggedCmd(
+            [statusObj.file, "--extract", statusObj.tmpdir, "-n"],
+            cwd=statusObj.tmpdir, logger=logger,
+            env={"DISPLAY":"", "TERM":"", "PATH":os.environ["PATH"]}
+            )
+    except (OSError, common.CommandException), e:
+        raise common.skip, str(e)
+
+    for hdr, id, ver in getHdrIdVer(statusObj.tmpdir, os.path.join(statusObj.tmpdir, "payload")):
         dest, packageIni = copyHdr(hdr, id, ver, outputTopdir, logger)
         for txt in glob.glob( "%s.[Tt][Xx][Tt]" % statusObj.file[:-len(".txt")] ):
             shutil.copyfile( txt, os.path.join(dest, "relnotes.txt") )

@@ -1,4 +1,10 @@
 
+# ensure old distro rpm can read our files
+%global _source_filedigest_algorithm  1
+%global _binary_filedigest_algorithm 1
+%global _source_payload	w9.gzdio
+%global _binary_payload	w9.gzdio
+
 %define safe_name #safe_name#
 %define name      #name#
 %define vendor_id #vendor_id#
@@ -21,7 +27,7 @@ Summary:   BIOS upgrade package for System: %{system_shortname}
 Name:      system_bios_%{system_shortname}
 Epoch:     %{epoch}
 Version:   %{version}
-Release:   20
+Release:   21
 Vendor:    Dell
 License:   Proprietary
 Group:     System Environment/Base
@@ -77,6 +83,9 @@ rm -rf $RPM_BUILD_ROOT
 /usr/sbin/firmwaretool --update --rpm -y
 
 %changelog
+* Mon Jan  3 2011 Matt Domsch <Matt_Domsch@dell.com> - 21-1
+- rebuild RPMs without using XZ compression or SHA256 checksums, for older rpm
+
 * Fri Feb 1 2008 Michael Brown <mebrown@michaels-house.net> - 20-1
 - change subdir for packaged bios files to /dell/bios/
 
